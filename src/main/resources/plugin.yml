@@ -1,0 +1,20 @@
+name: ${project.artifactId}
+main: com.mcmiddleearth.mcme.editor.EditorPlugin
+version: ${project.version}
+author: Eriol_Eandur
+depend: [MCME-Architect]
+api-version: 1.13
+
+commands:
+   block:
+      description: block selection
+      usage: /block <count | replace | switch> [-c]
+   count:
+      description: count selected blocks
+      usage: /count [-p | -m]
+   replace:
+      description: count selected (replace and switch) blocks
+      usage: /replace [-p | -m]      
+   queue:
+      description: manage editor queue
+      usage: /queue list|suspend|resume|cancel     
