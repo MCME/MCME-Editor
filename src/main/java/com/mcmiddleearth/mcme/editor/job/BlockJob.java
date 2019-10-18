@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.ChunkSnapshot;
@@ -57,6 +58,8 @@ public abstract class BlockJob extends AbstractJob{
     
     private int maxY, minY;
     
+    private boolean exactMatch;
+    
     protected final Map<BlockData,CountAction> actions = new HashMap<>();
     
     public BlockJob(EditCommandSender owner, int id, YamlConfiguration config) {
@@ -64,17 +67,20 @@ public abstract class BlockJob extends AbstractJob{
         createFileObjects();
         ///extraRegion=null;
         List list = config.getList("actions");
+        exactMatch = config.getBoolean("exactMatch",true);
         list.forEach(action->actions.put(((CountAction)action).getSearchData(), (CountAction)action));
         setYRange();
         loadResultsFromFile();
         loadRegionsFromFile();
     }
     
-    public BlockJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, int size) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
+    public BlockJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, boolean exactMatch, int size) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
         super(owner, id, world, size);
         this.extraRegion = extraRegion;
         this.regions.addAll(regions);
         setYRange();
+        this.exactMatch = exactMatch;
+        saveJobDataToFile();
         saveRegionsToFile();
         createFileObjects();
     }
@@ -220,7 +226,17 @@ public abstract class BlockJob extends AbstractJob{
 //Logger.getGlobal().info("inside: "+isInside(chunk.getX(),chunk.getZ(),i,k,j));
                     if(complete || isInside(chunk.getX(),chunk.getZ(),i,k,j)) {
                         BlockData data = chunk.getBlockData(i, k, j);
-                        CountAction action = actions.get(data);
+                        CountAction action = null;
+                        if(exactMatch) {
+                            action = actions.get(data);
+                        } else {
+                            for(Entry<BlockData,CountAction> search: actions.entrySet()) {
+                                if(data.matches(search.getKey())) {
+                                    action = search.getValue();
+                                    break;
+                                }
+                            }
+                        }
 //Logger.getGlobal().info("action: "+action);
                         if(action!=null) {
                             BlockData replace = action.apply();
@@ -272,5 +288,9 @@ public abstract class BlockJob extends AbstractJob{
             regionMaps.add(RegionUtil.saveToMap(region));
         }
         getConfig().set("regions", regionMaps);
+    }
+    
+    private void saveJobDataToFile() {
+        getConfig().set("exactMatch", exactMatch);
     }
 }

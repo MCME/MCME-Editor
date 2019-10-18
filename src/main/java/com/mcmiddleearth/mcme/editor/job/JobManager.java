@@ -52,7 +52,7 @@ public class JobManager {
     private static int nextId = 1;
 
     public static boolean enqueueBlockJob(EditCommandSender owner, boolean weSelection, Set<String> worlds, 
-                                                                   Set<String> rps, JobType type) {
+                                          Set<String> rps, JobType type, boolean exactMatch) {
         boolean jobStarted = false;
         Region weRegion;
         if(weSelection && owner instanceof EditPlayer && owner.isOnline()) {
@@ -123,9 +123,11 @@ Logger.getGlobal().info("size: "+chunks.size());
 
                 switch(type) {
                     case COUNT:
-                        job = new CountJob(owner, nextId, world, extraWeRegion, rpWeRegions,chunks.size()); break;
+                        job = new CountJob(owner, nextId, world, extraWeRegion, rpWeRegions, 
+                                           exactMatch,chunks.size()); break;
                     case REPLACE:
-                        job = new ReplaceJob(owner, nextId, world, extraWeRegion, rpWeRegions,chunks.size()); break;
+                        job = new ReplaceJob(owner, nextId, world, extraWeRegion, rpWeRegions, 
+                                             exactMatch,chunks.size()); break;
                 }
                 nextId++;
                 jobQueue.add(job);

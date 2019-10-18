@@ -43,8 +43,9 @@ public class CountJob extends BlockJob {
         //owner.getCounts().forEach(blockData -> results.put(blockData, 0));
     }
     
-    public CountJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, int size) {
-        super(owner, id, world, extraRegion, regions, size);
+    public CountJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, 
+                    boolean exactMatch, int size) {
+        super(owner, id, world, extraRegion, regions, exactMatch, size);
         int actionId = 0;
         for(BlockData blockData: owner.getCounts()) {
             actions.put(blockData,new CountAction(actionId,blockData));

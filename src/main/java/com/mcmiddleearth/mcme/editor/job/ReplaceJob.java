@@ -46,8 +46,9 @@ public class ReplaceJob extends BlockJob {
         //replaces = config.getObject("switch", switches.getClass());
     }
     
-    public ReplaceJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, int size) {
-        super(owner, id, world, extraRegion, regions, size);
+    public ReplaceJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, 
+                      boolean exactMatch, int size) {
+        super(owner, id, world, extraRegion, regions, exactMatch, size);
         int actionId = 0;
         for(Entry<BlockData,BlockData> entry: owner.getReplaces().entrySet()) {
             actions.put(entry.getKey(),new ReplaceAction(actionId,entry.getKey(),entry.getValue()));

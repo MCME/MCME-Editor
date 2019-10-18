@@ -54,6 +54,7 @@ public abstract class AbstractEditorCommand {
     public int startJob(CommandContext c, JobType type) {
 Logger.getGlobal().info("startJob: "+type.name());
         boolean weSelection = false;
+        boolean exactMatch = true;
         Set<String> worlds = new HashSet<>();
         Set<String> rps = new HashSet<>();
         String filename = null;
@@ -62,6 +63,8 @@ Logger.getGlobal().info("startJob: "+type.name());
             for(String option: options) {
                 if(option.startsWith("-we")) {
                     weSelection = true;
+                } else if(option.startsWith("-m")) {
+                    exactMatch = false;
                 } else if(option.startsWith("-f:")) {
                     filename = option.substring(3);
                 } else if(option.startsWith("-p:")) {
@@ -89,7 +92,8 @@ Logger.getGlobal().info("startJob: "+type.name());
                 ((EditCommandSender)c.getSource()).loadBlockSelections(file);
             }
         }
-        if(JobManager.enqueueBlockJob((EditCommandSender)c.getSource(),weSelection,worlds,rps,type)) {
+        if(JobManager.enqueueBlockJob((EditCommandSender)c.getSource(),weSelection,worlds,
+                                      rps,type,exactMatch)) {
             ((EditCommandSender)c.getSource()).info("Job was added to editor queue.");
         } else {
             ((EditCommandSender)c.getSource()).error("Enqueue job failed. Your may need to make a valid area selection.");
