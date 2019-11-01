@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
@@ -231,7 +232,10 @@ public abstract class BlockJob extends AbstractJob{
                             action = actions.get(data);
                         } else {
                             for(Entry<BlockData,CountAction> search: actions.entrySet()) {
+//Logger.getGlobal().info("search: "+search.getValue().toString());
+//Logger.getGlobal().info("data: "+data.toString());
                                 if(data.matches(search.getKey())) {
+//Logger.getGlobal().warning("Match!");
                                     action = search.getValue();
                                     break;
                                 }
@@ -239,7 +243,7 @@ public abstract class BlockJob extends AbstractJob{
                         }
 //Logger.getGlobal().info("action: "+action);
                         if(action!=null) {
-                            BlockData replace = action.apply();
+                            BlockData replace = action.apply(data);
 //Logger.getGlobal().info("replace: "+replace);
                             if(replace!=null) {
                                 edit.add(new Vector(i,k,j), replace);

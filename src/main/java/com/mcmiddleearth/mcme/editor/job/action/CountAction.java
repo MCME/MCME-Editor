@@ -45,7 +45,7 @@ public class CountAction implements ConfigurationSerializable {
         this.searchData = search.clone();
     }
     
-    public BlockData apply() {
+    public BlockData apply(BlockData found) {
         applicationCount++;
         return null;
     }
