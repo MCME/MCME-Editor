@@ -9,12 +9,16 @@ commands:
    block:
       description: block selection
       usage: /block <count | replace | switch> [-c]
+      aliases: blk
    count:
       description: count selected blocks
       usage: /count [-p | -m]
+      aliases: cnt
    replace:
       description: count selected (replace and switch) blocks
-      usage: /replace [-p | -m]      
+      usage: /replace [-p | -m]    
+      aliases: rpl
    queue:
       description: manage editor queue
-      usage: /queue list|suspend|resume|cancel     
+      usage: /queue list|suspend|resume|cancel   
+      aliases: que

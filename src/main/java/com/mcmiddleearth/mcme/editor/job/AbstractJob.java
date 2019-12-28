@@ -16,6 +16,7 @@
  */
 package com.mcmiddleearth.mcme.editor.job;
 
+import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditConsoleSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditPlayer;
@@ -44,6 +45,7 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -113,6 +115,10 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         YamlConfiguration config = new YamlConfiguration();
         try {
             config.load(new File(PluginData.getJobFolder(),id+jobDataFileExt));
+            if(config.getString("status").equals(JobStatus.FINISHED.name())) {
+                jobFile.delete();
+                return null;
+            }
             String ownerUuid = config.getString("owner","console");
             EditCommandSender owner;
             if(ownerUuid.equals("console")) {
@@ -125,6 +131,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
                     return new CountJob(owner,id, config);
                 case REPLACE:
                     return new ReplaceJob(owner,id, config);
+                case SURVIVAL_PREP:
+                    return new SurvivalPrepJob(owner,id, config);
                 default:
                     Logger.getLogger(AbstractJob.class.getName()).log(Level.SEVERE, "Invalid job type.");
             }
@@ -366,7 +374,18 @@ Logger.getGlobal().info("read size: "+size);
     }
 
     public void editChunk() {
-        writingQueue.poll().applyEdits(world);
+        ChunkEditData edit = writingQueue.poll();
+        //if(world.getChunkAt(edit.getChunkX(), edit.getChunkZ()).isLoaded()) {
+        try {
+            edit.applyEdits(world);
+        } finally {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    world.removePluginChunkTicket(edit.getChunkX(), edit.getChunkZ(), EditorPlugin.getInstance());
+                }
+            }.runTaskLater(EditorPlugin.getInstance(), 6);
+        }
 //Logger.getGlobal().info("Edit Chunk: "+current);
         current++;
         saveProgresToFile();
@@ -384,7 +403,8 @@ Logger.getGlobal().info("read size: "+size);
     public void serveChunkRequest() {
 //Logger.getGlobal().info("serveing Chunk request: ");
         ChunkPosition chunk = readingQueue.nextRequest();
-        readingQueue.putChunk(world.getChunkAt(chunk.getX(),chunk.getZ()).getChunkSnapshot());
+        world.addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
+        readingQueue.putChunk(world.getChunkAt(chunk.getX(),chunk.getZ()).getChunkSnapshot(true,true,true));
     }
     
     public String progresMessage() {

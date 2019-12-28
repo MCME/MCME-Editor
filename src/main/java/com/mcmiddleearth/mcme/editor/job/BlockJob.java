@@ -21,6 +21,7 @@ import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.job.action.CountAction;
 import com.mcmiddleearth.mcme.editor.util.RegionUtil;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Logger;
+import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
@@ -57,6 +58,7 @@ public abstract class BlockJob extends AbstractJob{
     private final static String resultsFileExt = ".res";
     //private DataOutputStream resultsOut;
     
+    @Getter
     private int maxY, minY;
     
     private boolean exactMatch;
@@ -186,7 +188,7 @@ public abstract class BlockJob extends AbstractJob{
     protected final boolean isInside(int chunkX, int chunkZ, int x, int y, int z) {
         x = 16*chunkX + x;
         z = 16*chunkZ + z;
-        if(extraRegion!=null && !extraRegion.contains(x,y,z)) {
+        if(extraRegion!=null && !extraRegion.contains(BlockVector3.at(x,y,z))) {
 //Logger.getGlobal().info("not in extra region: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+extraRegion);
             return false;
         }
@@ -195,7 +197,7 @@ public abstract class BlockJob extends AbstractJob{
             return true;
         }
         for(Region region:regions) {
-            if(region.contains(x, y, z)) {
+            if(region.contains(BlockVector3.at(x, y, z))) {
 //Logger.getGlobal().info("is inside: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+region);
                 return true;
             }
@@ -223,7 +225,7 @@ public abstract class BlockJob extends AbstractJob{
         for(int i=0; i<16; i++) {
             for(int j=0; j<16; j++) {
 //Logger.getGlobal().info("maxY: "+maxY);
-                for(int k=minY; k<maxY;k++) {
+                for(int k=minY; k<=Math.min(chunk.getHighestBlockYAt(i, j),maxY);k++) {
 //Logger.getGlobal().info("inside: "+isInside(chunk.getX(),chunk.getZ(),i,k,j));
                     if(complete || isInside(chunk.getX(),chunk.getZ(),i,k,j)) {
                         BlockData data = chunk.getBlockData(i, k, j);

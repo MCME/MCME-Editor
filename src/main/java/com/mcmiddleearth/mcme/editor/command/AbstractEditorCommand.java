@@ -16,6 +16,7 @@
  */
 package com.mcmiddleearth.mcme.editor.command;
 
+import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditPlayer;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
@@ -28,7 +29,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -52,7 +53,7 @@ public abstract class AbstractEditorCommand {
     }
 
     public int startJob(CommandContext c, JobType type) {
-Logger.getGlobal().info("startJob: "+type.name());
+//Logger.getGlobal().info("startJob: "+type.name());
         boolean weSelection = false;
         boolean exactMatch = true;
         Set<String> worlds = new HashSet<>();
@@ -63,7 +64,7 @@ Logger.getGlobal().info("startJob: "+type.name());
             for(String option: options) {
                 if(option.startsWith("-we")) {
                     weSelection = true;
-                } else if(option.startsWith("-m")) {
+                } else if(option.startsWith("-match")) {
                     exactMatch = false;
                 } else if(option.startsWith("-f:")) {
                     filename = option.substring(3);
@@ -71,11 +72,14 @@ Logger.getGlobal().info("startJob: "+type.name());
                     rps.add(option.substring(3));
                 } else if(option.startsWith("-m:")) {
                     worlds.add(option.substring(3));
+                } else if(option.equals("-survival")) {
+                    type = JobType.SURVIVAL_PREP;
                 } else {
                     ((EditCommandSender)c.getSource()).error("Invalid option:"+option);
                 }
             }
         } catch (IllegalArgumentException ex) {}
+//Logger.getLogger(AbstractEditorCommand.class.getName()).log(Level.INFO,"AbstractEditorCom: "+rps.size()+" "+rps.iterator().next());
         if(worlds.isEmpty() && rps.isEmpty()) {
             if(c.getSource() instanceof EditPlayer) {
                 weSelection = true;
@@ -92,12 +96,20 @@ Logger.getGlobal().info("startJob: "+type.name());
                 ((EditCommandSender)c.getSource()).loadBlockSelections(file);
             }
         }
-        if(JobManager.enqueueBlockJob((EditCommandSender)c.getSource(),weSelection,worlds,
-                                      rps,type,exactMatch)) {
-            ((EditCommandSender)c.getSource()).info("Job was added to editor queue.");
-        } else {
-            ((EditCommandSender)c.getSource()).error("Enqueue job failed. Your may need to make a valid area selection.");
-        }
+        boolean finalWeSelection = weSelection;
+        boolean finalExactMatch = exactMatch;
+        JobType finalType = type;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if(JobManager.enqueueBlockJob((EditCommandSender)c.getSource(),finalWeSelection,worlds,
+                                              rps,finalType,finalExactMatch)) {
+                    ((EditCommandSender)c.getSource()).info("Job was added to editor queue.");
+                } else {
+                    ((EditCommandSender)c.getSource()).error("Enqueue job failed. Your may need to make a valid area selection.");
+                }
+            }
+        }.runTaskAsynchronously(EditorPlugin.getInstance());
         return 0;
     }
     
