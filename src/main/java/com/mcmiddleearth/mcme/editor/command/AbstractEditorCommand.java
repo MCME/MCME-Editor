@@ -39,6 +39,7 @@ public abstract class AbstractEditorCommand {
     
     //TODO Help feature
     //TODO Common messages
+    public final String MANUAL_MESSAGE = "Manual at: ???.";
     
     public abstract LiteralArgumentBuilder<EditCommandSender> getCommandTree();
     
@@ -130,4 +131,6 @@ public abstract class AbstractEditorCommand {
                .suggest("-p:rpname", new LiteralMessage("Limits the job to areas using the given rp."));
         return builder;
     }
+    
+    
 }

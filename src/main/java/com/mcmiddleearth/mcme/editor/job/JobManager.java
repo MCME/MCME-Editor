@@ -26,7 +26,7 @@ import com.mcmiddleearth.mcme.editor.data.ChunkPosition;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.tasks.AsyncJobScheduler;
 import com.mcmiddleearth.mcme.editor.tasks.SyncJobScheduler;
-import com.mcmiddleearth.pluginutil.FAWEUtil;
+import com.mcmiddleearth.pluginutil.WEUtil;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
@@ -54,6 +54,10 @@ public class JobManager {
     
     private static int nextId = 1;
 
+    public static boolean enqueueClipboardJob(EditPlayer owner, JobType type) {
+        return false;
+    }
+    
     public static boolean enqueueBlockJob(EditCommandSender owner, boolean weSelection, Set<String> worlds, 
                                           Set<String> rps, JobType type, boolean exactMatch) {
 Logger.getGlobal().info("Enqueue 1!");
@@ -67,7 +71,7 @@ Logger.getGlobal().info("Enqueue 1!");
             } catch (IncompleteRegionException ex) {
                 Logger.getLogger(JobManager.class.getName()).log(Level.SEVERE, null, ex);
             }*/
-            weRegion = FAWEUtil.getSelection(((EditPlayer)owner).getPlayer());
+            weRegion = WEUtil.getSelection(((EditPlayer)owner).getPlayer());
         } else {
             weRegion = null;
         }

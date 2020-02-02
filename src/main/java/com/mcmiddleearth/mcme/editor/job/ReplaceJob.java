@@ -29,7 +29,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
  *
  * @author Eriol_Eandur
  */
-public class ReplaceJob extends BlockJob {
+public class ReplaceJob extends BlockSearchJob {
     
     //private Map<BlockData,BlockData> replaces = new HashMap<>();
     //private Map<BlockData,BlockData> switches = new HashMap<>();

@@ -32,7 +32,7 @@ import org.bukkit.util.Vector;
  *
  * @author Eriol_Eandur
  */
-public class SurvivalPrepJob extends BlockJob {
+public class SurvivalPrepJob extends BlockSearchJob {
 
     public SurvivalPrepJob(EditCommandSender owner, int id, YamlConfiguration config) {
         super(owner, id, config);
