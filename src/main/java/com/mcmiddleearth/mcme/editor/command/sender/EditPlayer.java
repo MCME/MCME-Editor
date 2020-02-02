@@ -17,7 +17,11 @@
 package com.mcmiddleearth.mcme.editor.command.sender;
 
 import com.mcmiddleearth.mcme.editor.EditorPlugin;
+import com.mcmiddleearth.mcme.editor.clipboard.Clipboard;
+import com.mcmiddleearth.mcme.editor.clipboard.UndoData;
 import com.mcmiddleearth.pluginutil.message.FancyMessage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +36,14 @@ import org.bukkit.entity.Player;
  */
 public class EditPlayer extends EditCommandSender{
     
+    @Getter @Setter
+    private Clipboard clipboard;
+
+    @Getter
+    private final List<UndoData> undoData = new ArrayList<>();
+    
+    @Getter
+    private final List<UndoData> redoData = new ArrayList<>();
     
     @Getter @Setter
     private BlockData incompleteBlockSelection = null;
@@ -50,6 +62,18 @@ public class EditPlayer extends EditCommandSender{
     
     public Player getPlayer() {
         return Bukkit.getPlayer(uuid);
+    }
+    
+    public boolean hasClipboard() {
+        return clipboard != null;
+    }
+    
+    public boolean hasUndos() {
+        return !undoData.isEmpty();
+    }
+    
+    public boolean hasRedos() {
+        return !redoData.isEmpty();
     }
     
     @Override

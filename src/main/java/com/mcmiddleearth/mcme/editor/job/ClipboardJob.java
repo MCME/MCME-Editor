@@ -17,6 +17,9 @@
 package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
+import com.mcmiddleearth.mcme.editor.command.sender.EditPlayer;
+import com.sk89q.worldedit.regions.Region;
+import java.util.HashSet;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -30,8 +33,8 @@ public abstract class ClipboardJob extends AbstractJob{
         super(owner, id, config);
     }
     
-    public ClipboardJob(EditCommandSender owner, int id, World world, int size) {
-        super(owner, id, world, size);
+    public ClipboardJob(EditPlayer owner, int id, World world, int size) {
+        super(owner, id, world, owner.getClipboard().getWeRegion(), new HashSet<Region>(), size);
     }
 
 }

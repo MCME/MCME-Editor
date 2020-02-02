@@ -36,7 +36,17 @@ public enum Permissions {
     BLOCK_QUEUE         ("mcmeeditor.command.block.queue",      PermissionDefault.OP, BLOCK),
     BLOCK_QUEUE_OTHER   ("mcmeeditor.command.block.queue.other",      PermissionDefault.OP, BLOCK_QUEUE),
     BLOCK_COUNT         ("mcmeeditor.command.block.count",      PermissionDefault.OP, BLOCK),
-    BLOCK_REPLACE       ("mcmeeditor.command.block.replace",    PermissionDefault.OP, BLOCK);
+    BLOCK_REPLACE       ("mcmeeditor.command.block.replace",    PermissionDefault.OP, BLOCK),
+    CLIPBOARD_LIMIT     ("mcmeeditor.clipboard.limit",          PermissionDefault.OP),
+    CLIPBOARD_UNLIMITED ("mcmeeditor.clipboard.unlimited",      PermissionDefault.OP),
+    CLIPBOARD_COPY      ("mcmeeditor.command.copy",             PermissionDefault.OP),
+    CLIPBOARD_CUT       ("mcmeeditor.command.cut",              PermissionDefault.OP),
+    CLIPBOARD_FLIP      ("mcmeeditor.command.flip",             PermissionDefault.OP),
+    CLIPBOARD_ROTATE    ("mcmeeditor.command.rotate",           PermissionDefault.OP),
+    CLIPBOARD_REDO      ("mcmeeditor.command.redo",             PermissionDefault.OP),
+    CLIPBOARD_UNDO      ("mcmeeditor.command.undo",             PermissionDefault.OP),
+    CLIPBOARD_PASTE     ("mcmeeditor.command.paste",            PermissionDefault.OP);
+    
     
     @Getter
     private final String permissionNode;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MCME
+ * Copyright (C) 2019 Eriol_Eandur
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,13 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.mcmiddleearth.mcme.editor.job;
+package com.mcmiddleearth.mcme.editor.clipboard;
+
+import com.mcmiddleearth.pluginutil.plotStoring.IStoragePlot;
 
 /**
  *
  * @author Eriol_Eandur
  */
-public enum JobType {
+public class UndoData extends Clipboard {
     
-    COUNT, REPLACE, SURVIVAL_PREP, COPY, PASTE, SET;
+    public UndoData(IStoragePlot plot) throws CopyPasteException{
+        super(plot.getLowCorner().clone(),plot.getLowCorner().clone(),plot.getHighCorner().clone());
+        if(!super.copyToClipboard()) {
+            throw new CopyPasteException("Undo data creation failed.");
+        }
+    }
+    
+    public boolean undo() {
+        rotation = 0;
+        return paste(getLowCorner().clone(), true, true);
+    }
 }

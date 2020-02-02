@@ -53,11 +53,24 @@ public class WritingQueue {
         return null;
     }
     
+    private ChunkEditData peek() {
+        return queue.element();
+    }
+    
     public boolean isFull() {
         return queue.remainingCapacity()==0;
     }
     
     public boolean hasEdit() {
-        return !queue.isEmpty();
+        if(!queue.isEmpty()) {
+            ChunkEditData edit = queue.peek();
+            if(world.getChunkAt(edit.getChunkX(),edit.getChunkZ()).isLoaded()) {
+                return true;
+            } else {
+                Logger.getLogger(WritingQueue.class.getName()).log(Level.INFO, "Chunk not loaded yet! {0} {1}", new Object[]{edit.getChunkX(), edit.getChunkZ()});
+                return false;
+            }
+        }
+        return false;
     }
 }

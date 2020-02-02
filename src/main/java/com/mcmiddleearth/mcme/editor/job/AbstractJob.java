@@ -16,6 +16,7 @@
  */
 package com.mcmiddleearth.mcme.editor.job;
 
+import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditConsoleSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditPlayer;
@@ -24,6 +25,9 @@ import com.mcmiddleearth.mcme.editor.data.ChunkPosition;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.queue.ReadingQueue;
 import com.mcmiddleearth.mcme.editor.queue.WritingQueue;
+import com.mcmiddleearth.mcme.editor.util.RegionUtil;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -32,7 +36,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -44,6 +50,7 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -85,6 +92,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     
     @Getter
     private int size;
+    
     @Getter
     private int current=0;
     private int unrequested;
@@ -100,19 +108,26 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     @Getter
     private YamlConfiguration config;
     
-    //Integer[0]: blockDataId; Integer[1]: blocks found
-    //protected Map<BlockData,Integer[]> results = new HashMap<>();
-
     @Getter
     private static EnumSet<JobStatus> runnableStates = EnumSet.of(JobStatus.RUNNING,JobStatus.SUSPENDED,JobStatus.WAITING);
     @Getter
     private static EnumSet<JobStatus> dequeueableStates = EnumSet.of(JobStatus.CANCELLED,JobStatus.FINISHED,JobStatus.FAILED);
 
+    private Region extraRegion;
+    private final Set<Region> regions = new HashSet<>();
+
+    @Getter
+    private int maxY, minY;
+    
     public static AbstractJob loadJob(File jobFile) {
         int id = Integer.parseInt(jobFile.getName().substring(0, jobFile.getName().indexOf(jobDataFileExt)));
         YamlConfiguration config = new YamlConfiguration();
         try {
             config.load(new File(PluginData.getJobFolder(),id+jobDataFileExt));
+            if(config.getString("status").equals(JobStatus.FINISHED.name())) {
+                jobFile.delete();
+                return null;
+            }
             String ownerUuid = config.getString("owner","console");
             EditCommandSender owner;
             if(ownerUuid.equals("console")) {
@@ -125,6 +140,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
                     return new CountJob(owner,id, config);
                 case REPLACE:
                     return new ReplaceJob(owner,id, config);
+                case SURVIVAL_PREP:
+                    return new SurvivalPrepJob(owner,id, config);
                 default:
                     Logger.getLogger(AbstractJob.class.getName()).log(Level.SEVERE, "Invalid job type.");
             }
@@ -159,9 +176,11 @@ Logger.getGlobal().info("no Progress file found");
         unrequested=size-current;
         statusRequested = JobStatus.valueOf(config.getString("status", JobStatus.SUSPENDED.name()));
 Logger.getGlobal().info("job status: "+id+" "+statusRequested);
+        setYRange();
+        loadRegionsFromFile();
     }
     
-    public AbstractJob(EditCommandSender owner, int id, World world, int size) {
+    public AbstractJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, int size) {
         status = JobStatus.CREATION;
         statusRequested = status;
         startTime = System.currentTimeMillis();
@@ -190,6 +209,10 @@ Logger.getGlobal().info("job status: "+id+" "+statusRequested);
         } catch (IOException ex) {
             fail(ex);
         }
+        this.extraRegion = extraRegion;
+        this.regions.addAll(regions);
+        setYRange();
+        saveRegionsToFile();
     }
     
     /*protected void initialize() {
@@ -366,7 +389,18 @@ Logger.getGlobal().info("read size: "+size);
     }
 
     public void editChunk() {
-        writingQueue.poll().applyEdits(world);
+        ChunkEditData edit = writingQueue.poll();
+        //if(world.getChunkAt(edit.getChunkX(), edit.getChunkZ()).isLoaded()) {
+        try {
+            edit.applyEdits(world);
+        } finally {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    world.removePluginChunkTicket(edit.getChunkX(), edit.getChunkZ(), EditorPlugin.getInstance());
+                }
+            }.runTaskLater(EditorPlugin.getInstance(), 6);
+        }
 //Logger.getGlobal().info("Edit Chunk: "+current);
         current++;
         saveProgresToFile();
@@ -384,7 +418,8 @@ Logger.getGlobal().info("read size: "+size);
     public void serveChunkRequest() {
 //Logger.getGlobal().info("serveing Chunk request: ");
         ChunkPosition chunk = readingQueue.nextRequest();
-        readingQueue.putChunk(world.getChunkAt(chunk.getX(),chunk.getZ()).getChunkSnapshot());
+        world.addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
+        readingQueue.putChunk(world.getChunkAt(chunk.getX(),chunk.getZ()).getChunkSnapshot(true,true,true));
     }
     
     public String progresMessage() {
@@ -412,6 +447,76 @@ Logger.getGlobal().info("saveJobStatus: "+statusRequested.name());
                 || (sender instanceof EditPlayer 
                     && owner instanceof EditPlayer
                     && ((EditPlayer)sender).getUuid().equals(((EditPlayer)owner).getUuid()));
+    }
+    
+    private void setYRange() {
+        if(regions.isEmpty() && extraRegion!=null) {
+            maxY = extraRegion.getMaximumPoint().getBlockY();
+            minY = extraRegion.getMinimumPoint().getBlockY();
+        } else {
+            maxY = 0;
+            minY = getWorld().getMaxHeight();
+            for(Region region: regions) {
+                if(region.getMaximumPoint().getBlockY()>maxY) {
+                    maxY = region.getMaximumPoint().getBlockY();
+                }
+                if(region.getMinimumPoint().getBlockY()<minY) {
+                    minY = region.getMinimumPoint().getBlockY();
+                }
+            }
+            if(extraRegion!=null) {
+                maxY = Math.min(maxY, extraRegion.getMaximumPoint().getBlockY());
+                minY = Math.max(minY, extraRegion.getMinimumPoint().getBlockY());
+            }
+        }
+    }
+    
+    protected final boolean isInside(int chunkX, int chunkZ, int x, int y, int z) {
+        x = 16*chunkX + x;
+        z = 16*chunkZ + z;
+        if(extraRegion!=null && !extraRegion.contains(BlockVector3.at(x,y,z))) {
+//Logger.getGlobal().info("not in extra region: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+extraRegion);
+            return false;
+        }
+        if(regions.isEmpty()) {
+//Logger.getGlobal().info("in extra region: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+extraRegion);
+            return true;
+        }
+        for(Region region:regions) {
+            if(region.contains(BlockVector3.at(x, y, z))) {
+//Logger.getGlobal().info("is inside: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+region);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void loadRegionsFromFile() {
+        if(getConfig().contains("extraRegion")) {
+            extraRegion = RegionUtil.loadFromMap(getConfig().getConfigurationSection("extraRegion")
+                                                            .getValues(true));
+        } else {
+            extraRegion = null;
+        }
+        List<Map<?,?>> regionMaps = getConfig().getMapList("regions");
+        for(Map<?,?> map: regionMaps) {
+            helper(map);
+        }
+    }
+    
+    private <T,V> void helper(Map<T,V> map) {
+        regions.add(RegionUtil.loadFromMap(map));
+    }
+    
+    private void saveRegionsToFile() {
+        if(extraRegion!=null) {
+            getConfig().set("extraRegion", RegionUtil.saveToMap(extraRegion));
+        }
+        List<Map<String,Object>> regionMaps = new ArrayList<>();
+        for(Region region: regions) {
+            regionMaps.add(RegionUtil.saveToMap(region));
+        }
+        getConfig().set("regions", regionMaps);
     }
     
 

@@ -28,7 +28,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
  *
  * @author Eriol_Eandur
  */
-public class CountJob extends BlockJob {
+public class CountJob extends BlockSearchJob {
     
     //Integer: blockDataId
     //private Set<BlockData,Integer> counts = new HashMap<>();

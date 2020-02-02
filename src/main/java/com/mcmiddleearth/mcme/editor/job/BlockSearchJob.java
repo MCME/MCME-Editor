@@ -20,7 +20,6 @@ import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.job.action.CountAction;
-import com.mcmiddleearth.mcme.editor.util.RegionUtil;
 import com.sk89q.worldedit.regions.Region;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -30,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,67 +44,33 @@ import org.bukkit.util.Vector;
  *
  * @author Eriol_Eandur
  */
-public abstract class BlockJob extends AbstractJob{
-    
-    private Region extraRegion;
-    //private final Set<World> worlds = new HashSet<>();
-    private final Set<Region> regions = new HashSet<>();
+public abstract class BlockSearchJob extends AbstractJob{
     
     private File resultsFile;
     private final static String resultsFileExt = ".res";
     //private DataOutputStream resultsOut;
     
-    private int maxY, minY;
-    
     private boolean exactMatch;
     
     protected final Map<BlockData,CountAction> actions = new HashMap<>();
     
-    public BlockJob(EditCommandSender owner, int id, YamlConfiguration config) {
+    public BlockSearchJob(EditCommandSender owner, int id, YamlConfiguration config) {
         super(owner, id, config);
         createFileObjects();
         ///extraRegion=null;
         List list = config.getList("actions");
         exactMatch = config.getBoolean("exactMatch",true);
         list.forEach(action->actions.put(((CountAction)action).getSearchData(), (CountAction)action));
-        setYRange();
         loadResultsFromFile();
-        loadRegionsFromFile();
     }
     
-    public BlockJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, boolean exactMatch, int size) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
-        super(owner, id, world, size);
-        this.extraRegion = extraRegion;
-        this.regions.addAll(regions);
-        setYRange();
+    public BlockSearchJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, boolean exactMatch, int size) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
+        super(owner, id, world, extraRegion, regions, size);
         this.exactMatch = exactMatch;
         saveJobDataToFile();
-        saveRegionsToFile();
         createFileObjects();
     }
  
-    private void setYRange() {
-        if(regions.isEmpty() && extraRegion!=null) {
-            maxY = extraRegion.getMaximumPoint().getBlockY();
-            minY = extraRegion.getMinimumPoint().getBlockY();
-        } else {
-            maxY = 0;
-            minY = getWorld().getMaxHeight();
-            for(Region region: regions) {
-                if(region.getMaximumPoint().getBlockY()>maxY) {
-                    maxY = region.getMaximumPoint().getBlockY();
-                }
-                if(region.getMinimumPoint().getBlockY()<minY) {
-                    minY = region.getMinimumPoint().getBlockY();
-                }
-            }
-            if(extraRegion!=null) {
-                maxY = Math.min(maxY, extraRegion.getMaximumPoint().getBlockY());
-                minY = Math.max(minY, extraRegion.getMinimumPoint().getBlockY());
-            }
-        }
-    }
-    
     protected final void saveActionsToFile() {
         try {
             List<Object> list = new ArrayList<>();
@@ -182,39 +146,19 @@ public abstract class BlockJob extends AbstractJob{
         }
     }*/
     
-    protected final boolean isInside(int chunkX, int chunkZ, int x, int y, int z) {
-        x = 16*chunkX + x;
-        z = 16*chunkZ + z;
-        if(extraRegion!=null && !extraRegion.contains(x,y,z)) {
-//Logger.getGlobal().info("not in extra region: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+extraRegion);
-            return false;
-        }
-        if(regions.isEmpty()) {
-//Logger.getGlobal().info("in extra region: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+extraRegion);
-            return true;
-        }
-        for(Region region:regions) {
-            if(region.contains(x, y, z)) {
-//Logger.getGlobal().info("is inside: "+chunkX+ " "+ chunkZ+" "+x+" "+y+" "+z+" "+region);
-                return true;
-            }
-        }
-        return false;
-    }
-    
     @Override
     public ChunkEditData handle(ChunkSnapshot chunk) {
         boolean complete= false;
         //int maxY = getWorld().getMaxHeight();
 //Logger.getGlobal().info("handle chunk: "+chunk);
-        if(isInside(chunk.getX(), chunk.getZ(),0,minY,0)
-            && isInside(chunk.getX(), chunk.getZ(),0,minY,15)
-            && isInside(chunk.getX(), chunk.getZ(),15,minY,0)
-            && isInside(chunk.getX(), chunk.getZ(),15,minY,15)
-            && isInside(chunk.getX(), chunk.getZ(),0,maxY,0)
-            && isInside(chunk.getX(), chunk.getZ(),0,maxY,15)
-            && isInside(chunk.getX(), chunk.getZ(),15,maxY,0)
-            && isInside(chunk.getX(), chunk.getZ(),15,maxY,15)) {
+        if(isInside(chunk.getX(), chunk.getZ(),0,getMinY(),0)
+            && isInside(chunk.getX(), chunk.getZ(),0,getMinY(),15)
+            && isInside(chunk.getX(), chunk.getZ(),15,getMinY(),0)
+            && isInside(chunk.getX(), chunk.getZ(),15,getMinY(),15)
+            && isInside(chunk.getX(), chunk.getZ(),0,getMaxY(),0)
+            && isInside(chunk.getX(), chunk.getZ(),0,getMaxY(),15)
+            && isInside(chunk.getX(), chunk.getZ(),15,getMaxY(),0)
+            && isInside(chunk.getX(), chunk.getZ(),15,getMaxY(),15)) {
             complete = true;
         }
 //Logger.getGlobal().info("complete: "+complete);
@@ -222,7 +166,7 @@ public abstract class BlockJob extends AbstractJob{
         for(int i=0; i<16; i++) {
             for(int j=0; j<16; j++) {
 //Logger.getGlobal().info("maxY: "+maxY);
-                for(int k=minY; k<maxY;k++) {
+                for(int k=getMinY(); k<=Math.min(chunk.getHighestBlockYAt(i, j),getMaxY());k++) {
 //Logger.getGlobal().info("inside: "+isInside(chunk.getX(),chunk.getZ(),i,k,j));
                     if(complete || isInside(chunk.getX(),chunk.getZ(),i,k,j)) {
                         BlockData data = chunk.getBlockData(i, k, j);
@@ -231,7 +175,10 @@ public abstract class BlockJob extends AbstractJob{
                             action = actions.get(data);
                         } else {
                             for(Entry<BlockData,CountAction> search: actions.entrySet()) {
+//Logger.getGlobal().info("search: "+search.getValue().toString());
+//Logger.getGlobal().info("data: "+data.toString());
                                 if(data.matches(search.getKey())) {
+//Logger.getGlobal().warning("Match!");
                                     action = search.getValue();
                                     break;
                                 }
@@ -239,7 +186,7 @@ public abstract class BlockJob extends AbstractJob{
                         }
 //Logger.getGlobal().info("action: "+action);
                         if(action!=null) {
-                            BlockData replace = action.apply();
+                            BlockData replace = action.apply(data);
 //Logger.getGlobal().info("replace: "+replace);
                             if(replace!=null) {
                                 edit.add(new Vector(i,k,j), replace);
@@ -261,33 +208,6 @@ public abstract class BlockJob extends AbstractJob{
                             + ChatColor.GREEN+action.getApplicationCount()+"\n";
         }
         return result;
-    }
-    
-    private void loadRegionsFromFile() {
-        if(getConfig().contains("extraRegion")) {
-            extraRegion = RegionUtil.loadFromMap(getConfig().getConfigurationSection("extraRegion")
-                                                            .getValues(true));
-        } else {
-            extraRegion = null;
-        }
-        List<Map<?,?>> regionMaps = getConfig().getMapList("regions");
-        for(Map<?,?> map: regionMaps) {
-            helper(map);
-        }
-    }
-    private <T,V> void helper(Map<T,V> map) {
-        regions.add(RegionUtil.loadFromMap(map));
-    }
-    
-    private void saveRegionsToFile() {
-        if(extraRegion!=null) {
-            getConfig().set("extraRegion", RegionUtil.saveToMap(extraRegion));
-        }
-        List<Map<String,Object>> regionMaps = new ArrayList<>();
-        for(Region region: regions) {
-            regionMaps.add(RegionUtil.saveToMap(region));
-        }
-        getConfig().set("regions", regionMaps);
     }
     
     private void saveJobDataToFile() {
