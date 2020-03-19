@@ -165,26 +165,36 @@ public abstract class EditCommandSender {
                 if(line.startsWith("-")) {
                     break;
                 }
-                BlockData data = Bukkit.createBlockData(line);
-                counts.add(data);
+                if(line.startsWith("minecraft:")) {
+                    BlockData data = Bukkit.createBlockData(line);
+                    counts.add(data);
+                }
             }
             while(reader.hasNext()) {
                 String line = reader.nextLine();
                 if(line.startsWith("-")) {
                     break;
                 }
-                BlockData data1 = Bukkit.createBlockData(line);
-                BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
-                replaces.put(data1,data2);
+                if(line.startsWith("minecraft:")) {
+                    BlockData data1 = Bukkit.createBlockData(line);
+                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
+                    replaces.put(data1,data2);
+                } else if(line.startsWith("mcme:")) {
+                    BlockData data1 = ItemBlockData.createItemBlockData(line);
+                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
+                    replaces.put(data1,data2);
+                }
             }
             while(reader.hasNext()) {
                 String line = reader.nextLine();
                 if(line.startsWith("-")) {
                     break;
                 }
-                BlockData data1 = Bukkit.createBlockData(line);
-                BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
-                switches.put(data1,data2);
+                if(line.startsWith("minecraft:")) {
+                    BlockData data1 = Bukkit.createBlockData(line);
+                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
+                    switches.put(data1,data2);
+                }
             }
             
         } catch (FileNotFoundException ex) {

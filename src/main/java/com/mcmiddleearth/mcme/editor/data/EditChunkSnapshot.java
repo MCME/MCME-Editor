@@ -21,8 +21,11 @@ import com.mcmiddleearth.architect.specialBlockHandling.data.SpecialBlockInvento
 import com.mcmiddleearth.architect.specialBlockHandling.specialBlocks.SpecialBlockItemBlock;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -45,18 +48,34 @@ public class EditChunkSnapshot {
                 if(entity instanceof ArmorStand && SpecialBlockItemBlock.isItemBlockArmorStand((ArmorStand)entity)) {
                     //String id = SpecialBlockItemBlock.getIdFromArmorStand((ArmorStand)entity);
                     int contentDamage = SpecialBlockItemBlock.getContentDamage((ArmorStand)entity);
-                    int[] coords = SpecialBlockItemBlock.getCoordinatesFromArmorStand((ArmorStand)entity);
+                    //int[] coords = SpecialBlockItemBlock.getCoordinatesFromArmorStand((ArmorStand)entity); Doesn't work for WE copies.
+                    Location armorLoc = entity.getLocation();
+Logger.getGlobal().info("Armor stand found: "+armorLoc.getX()+" "+armorLoc.getY()+" "+armorLoc.getZ());
                     SpecialBlockItemBlock specialBlock = (SpecialBlockItemBlock) SpecialBlockInventoryData
                                                                  .getSpecialBlock(SpecialBlockItemBlock
                                                                                   .getIdFromArmorStand((ArmorStand)entity));
-
-                    BlockData blockData = chunk.getBlock(coords[0]%16, coords[1], coords[2]%16).getBlockData();
-                    itemBlockData.put(new Vector(coords[0]%16,coords[1], coords[2]%16),
-                                      new ItemBlockData(blockData,specialBlock,contentDamage,entity.getLocation().getYaw()));
+                    if(specialBlock!=null) {
+Logger.getGlobal().info("specialBlock: "+specialBlock);
+                        Block block = specialBlock.getBlock(armorLoc);
+Logger.getGlobal().info("Block found: "+block.getX()+" "+block.getY()+" "+block.getZ());
+                        if(!specialBlock.isArmorStandChanged((ArmorStand)entity, block)) {
+    Logger.getGlobal().info("adding item block data!");
+                            //BlockData blockData = chunk.getBlock(toChunkCoord(coords[0]), coords[1], toChunkCoord(coords[2])).getBlockData();
+                            itemBlockData.put(new Vector(toChunkCoord(block.getX()),block.getY(), toChunkCoord(block.getZ())),
+                                              new ItemBlockData(block.getBlockData(),specialBlock,contentDamage,entity.getLocation().getYaw()));
+                        }
+                    }
                 }
             }
         }
             
+    }
+    
+    private int toChunkCoord(int coord) {
+        while(coord<0) {
+            coord+=1024;
+        }
+        return coord%16;
     }
     
     public ChunkSnapshot getChunkSnapshot() {
