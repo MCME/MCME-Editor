@@ -88,11 +88,11 @@ public class ChunkEditData {
     public void applyEdits(World world) {
 //Logger.getGlobal().info("apply edits, size: "+changes.size());
         Chunk chunk = world.getChunkAt(chunkX, chunkZ);
-        if(Math.random()<0.01)
-        {
-            Logger.getLogger(EditorPlugin.class.getName()).log(Level.INFO,"Working at: "+chunkX+" "+chunkZ
-                    +" ChunkTickets: "+world.getPluginChunkTickets().get(EditorPlugin.getInstance()).size());
-        }
+/*if(Math.random()<0.01)
+{
+    Logger.getLogger(EditorPlugin.class.getName()).log(Level.INFO,"Working at: "+chunkX+" "+chunkZ
+            +" ChunkTickets: "+world.getPluginChunkTickets().get(EditorPlugin.getInstance()).size());
+}*/
         removals.forEach((vector,data) -> {
             ArmorStand armorStand = SpecialBlockItemBlock.getArmorStand(new Location(chunk.getWorld(),
                                                                             chunkX*16+vector.getBlockX(),

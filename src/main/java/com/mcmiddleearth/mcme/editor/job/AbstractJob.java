@@ -26,6 +26,7 @@ import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.queue.ReadingQueue;
 import com.mcmiddleearth.mcme.editor.queue.WritingQueue;
+import com.mcmiddleearth.mcme.editor.util.ProgressMessenger;
 import com.mcmiddleearth.mcme.editor.util.RegionUtil;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
@@ -48,6 +49,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -117,7 +119,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     private static EnumSet<JobStatus> dequeueableStates = EnumSet.of(JobStatus.CANCELLED,JobStatus.FINISHED,JobStatus.FAILED);
 
     private Region extraRegion;
-    private final Set<Region> regions = new HashSet<>();
+    private final List<Region> regions = new ArrayList<>();
 
     @Getter
     private int maxY, minY;
@@ -184,7 +186,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         loadRegionsFromFile();
     }
     
-    public AbstractJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, int size, boolean includeItemBlocks) {
+    public AbstractJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, int size, boolean includeItemBlocks) {
         status = JobStatus.CREATION;
         statusRequested = status;
         startTime = System.currentTimeMillis();
@@ -280,16 +282,18 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
                     (size-current > other.size-other.current?1:0));
     }
     
-    public static boolean saveChunksToFile(int id, Set<ChunkPosition> chunks) {
+    public static boolean saveChunksToFile(int id, Set<ChunkPosition> chunks, CommandSender receiver) {
         try(DataOutputStream out = new DataOutputStream(new FileOutputStream(getChunkFile(id)))) {
-Logger.getGlobal().info("write chunkFile: "+getChunkFile(id).getName());
-Logger.getGlobal().info("write size: "+chunks.size());
+//Logger.getGlobal().info("write chunkFile: "+getChunkFile(id).getName());
+//Logger.getGlobal().info("write size: "+chunks.size());
             out.writeInt(chunks.size());
+            ProgressMessenger progress = new ProgressMessenger(receiver,2,"Writing chunk information: %1 of "+chunks.size());
             for(ChunkPosition chunk: chunks) {
                 out.writeInt(chunk.getX());
 //Logger.getGlobal().info("write x: "+chunk.getX());
                 out.writeInt(chunk.getZ());
 //Logger.getGlobal().info("write z: "+chunk.getZ());
+                progress.step();
             }
             out.flush();
             out.close();
@@ -425,6 +429,10 @@ Logger.getGlobal().info("write size: "+chunks.size());
         return readingQueue.hasRequest();
     }
 
+    public boolean needsChunks() {
+        return readingQueue.remainingChunkCapacity()>0;
+    }
+    
     public void serveChunkRequest() {
 //Logger.getGlobal().info("serveing Chunk request: ");
         ChunkPosition chunk = readingQueue.nextRequest();
@@ -451,6 +459,8 @@ Logger.getGlobal().info("saveJobStatus: "+statusRequested.name());
     }
     
     public abstract void saveResultsToFile();
+    
+    public abstract void saveLogsToFile();
     
     public boolean isOwner(EditCommandSender sender) {
         return (sender instanceof EditConsoleSender && owner instanceof EditConsoleSender)

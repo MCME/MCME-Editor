@@ -139,6 +139,7 @@ public class AsyncJobScheduler extends BukkitRunnable{
     
     private void cancel(AbstractJob job) {
         job.setStatus(JobStatus.CANCELLED);
+        job.saveLogsToFile();
         job.closeFileStreams();
         if(!checkFail(job)) {
             job.getOwner().info("Your job #"+job.getId()+" was cancelled.");
@@ -147,6 +148,7 @@ public class AsyncJobScheduler extends BukkitRunnable{
     
     private void suspend(AbstractJob job) {
         job.setStatus(JobStatus.SUSPENDED);
+        job.saveLogsToFile();
             job.getOwner().info("Your job #"+job.getId()+" was suspended.");
     }
     
@@ -157,6 +159,7 @@ public class AsyncJobScheduler extends BukkitRunnable{
 
     private void finish(AbstractJob job) {
         job.setStatus(JobStatus.FINISHED);
+        job.saveLogsToFile();
         job.closeFileStreams();
         if(!checkFail(job)) {
             job.getOwner().info("Your job #"+job.getId()+" was finished."+job.getResultMessage());
