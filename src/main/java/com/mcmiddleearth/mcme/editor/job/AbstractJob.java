@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -175,12 +174,12 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         try(DataInputStream in = new DataInputStream(new FileInputStream(progresFile))) {
             current = in.readInt();
         } catch (IOException ex) {
-Logger.getGlobal().info("no Progress file found");
+//Logger.getGlobal().info("no Progress file found");
             current = 0;
         }
         unrequested=size-current;
         statusRequested = JobStatus.valueOf(config.getString("status", JobStatus.SUSPENDED.name()));
-Logger.getGlobal().info("job status: "+id+" "+statusRequested);
+//Logger.getGlobal().info("job status: "+id+" "+statusRequested);
         setYRange();
         loadRegionsFromFile();
     }
@@ -303,9 +302,9 @@ Logger.getGlobal().info("write size: "+chunks.size());
 
     private void readSizeFromFile() {
         try(DataInputStream in = new DataInputStream(new FileInputStream(chunkFile))) {
-Logger.getGlobal().info("read chunkFile: "+chunkFile);
+//Logger.getGlobal().info("read chunkFile: "+chunkFile);
            size = in.readInt();
-Logger.getGlobal().info("read size: "+size);
+//Logger.getGlobal().info("read size: "+size);
         } catch (IOException ex) {
             size = 0;
             fail(ex);
@@ -349,7 +348,9 @@ Logger.getGlobal().info("read size: "+size);
     
     public void closeFileStreams() {
         try {
-            chunkIn.close();
+            if(chunkIn!=null) {
+                chunkIn.close();
+            }
         } catch (IOException ex) {
             fail(ex);
         }
@@ -372,7 +373,9 @@ Logger.getGlobal().info("read size: "+size);
     public void work() {
         while(readingQueue.hasChunk()) {
 //Logger.getGlobal().info("handle chunk (current unrequested):" +current+" "+unrequested);
-            writingQueue.put(handle(readingQueue.pollChunk()));
+            ChunkEditData data = handle(readingQueue.pollChunk());
+            writingQueue.put(data);
+            saveResultsToFile();
         }
     }
 

@@ -35,7 +35,7 @@ public class ReplaceJob extends BlockSearchJob {
     public ReplaceJob(EditCommandSender owner, int id, YamlConfiguration config) {
         super(owner, id, config);
         //actions.putAll(config.getObject("replaces", HashMap.class));
-        loadResultsFromFile();
+        //loadResultsFromFile();
         
     }
     

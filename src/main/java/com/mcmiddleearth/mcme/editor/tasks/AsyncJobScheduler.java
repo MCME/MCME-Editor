@@ -98,7 +98,7 @@ public class AsyncJobScheduler extends BukkitRunnable{
                             }
                             job.setStatus(JobStatus.RUNNING);
                             job.work();
-                            job.saveResultsToFile();
+                            //job.saveResultsToFile();
                             job.requestChunks();
                             doneSomething = true;
                         } else {
