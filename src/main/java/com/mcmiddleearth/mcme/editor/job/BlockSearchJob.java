@@ -28,13 +28,16 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
@@ -48,9 +51,10 @@ import org.bukkit.util.Vector;
  */
 public abstract class BlockSearchJob extends AbstractJob{
     
-    private File resultsFile,resultsTempFile;
+    private File resultsFile,resultsTempFile,logFile;
     private final static String resultsFileExt = ".res";
     private final static String resultsTempFileExt = ".tmp";
+    private final static String logFileExt = ".log";
     //private DataOutputStream resultsOut;
     
     private boolean exactMatch;
@@ -67,7 +71,7 @@ public abstract class BlockSearchJob extends AbstractJob{
         loadResultsFromFile();
     }
     
-    public BlockSearchJob(EditCommandSender owner, int id, World world, Region extraRegion, Set<Region> regions, 
+    public BlockSearchJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, 
                           boolean exactMatch, int size, boolean includeItemBlocks) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
         super(owner, id, world, extraRegion, regions, size, includeItemBlocks);
         this.exactMatch = exactMatch;
@@ -83,6 +87,23 @@ public abstract class BlockSearchJob extends AbstractJob{
             getConfig().save(getJobDataFile());
         } catch (IOException ex) {
             fail(ex);
+        }
+    }
+    
+    @Override
+    public synchronized void saveLogsToFile() {
+        try(PrintWriter fw = new PrintWriter(new FileWriter(logFile))) {
+            actions.values().stream().map((action) -> {
+                fw.println(action.getSearchData().getAsString(true).replace("minecraft:", "")
+                        + "->" + action.getApplicationCount());
+                return action;
+            }).forEachOrdered((action) -> {
+                action.getLocations().forEach((loc) -> {
+                    fw.println(" "+loc.getBlockX()+" | "+loc.getBlockY()+" | "+loc.getBlockZ());
+                });
+            });
+        } catch (IOException ex) {
+            Logger.getLogger(BlockSearchJob.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -128,6 +149,7 @@ public abstract class BlockSearchJob extends AbstractJob{
     private void createFileObjects() {
         resultsFile = new File(PluginData.getJobFolder(),getId()+resultsFileExt);
         resultsTempFile = new File(PluginData.getJobFolder(),getId()+resultsTempFileExt);
+        logFile = new File(PluginData.getJobFolder(),getId()+logFileExt);
     }
     
     /*@Override
@@ -219,7 +241,7 @@ public abstract class BlockSearchJob extends AbstractJob{
                         }
 //Logger.getGlobal().info("action: "+action);
                         if(action!=null) {
-                            BlockData replace = action.apply(data);
+                            BlockData replace = action.apply(data, new Vector(chunk.getX()*16+i,k,chunk.getZ()+j));
 //Logger.getGlobal().info("replace: "+replace);
                             if(replace!=null) {
                                 edit.add(new Vector(i,k,j), replace);

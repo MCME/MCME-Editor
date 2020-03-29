@@ -43,12 +43,12 @@ public class SyncJobScheduler extends BukkitRunnable{
             long startTime = System.nanoTime();
             long serverTick = startTime-lastStartTime;
             long endTime;
-            if(serverTick>90000000) {
+            if(serverTick>60e6) {
                 endTime = startTime;
-            } else if(serverTick>70000000) {
-                endTime = startTime+10000000;
+            } else if(serverTick>51e6) {
+                endTime = startTime+ (long) 5e6;
             } else {
-                endTime = startTime+20000000;
+                endTime = startTime+(long) 15e6;
             }
             Iterator<AbstractJob> jobs = JobManager.getJobs();
 //Logger.getGlobal().info("jobs: "+jobs.hasNext());
@@ -64,7 +64,7 @@ public class SyncJobScheduler extends BukkitRunnable{
                     }
 //Logger.getGlobal().info("run job status: "+job.getId()+" hasRequest: "+job.hasRequests());
 //Logger.getGlobal().info("time: "+System.nanoTime()+" "+endTime);
-                    while(System.nanoTime()<endTime && job.hasRequests()) {
+                    while(System.nanoTime()<endTime && job.hasRequests() && job.needsChunks()) {
                         job.serveChunkRequest();
 //Logger.getGlobal().info("time: "+System.nanoTime()+" "+endTime);
                     }
