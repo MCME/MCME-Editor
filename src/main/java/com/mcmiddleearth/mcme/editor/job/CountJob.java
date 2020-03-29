@@ -33,7 +33,7 @@ public class CountJob extends BlockSearchJob {
     public CountJob(EditCommandSender owner, int id, YamlConfiguration config) {
         super(owner, id, config);
         //actions.putAll(config.getObject("counts", HashMap.class));
-        loadResultsFromFile();
+        //loadResultsFromFile();
         
     }
     
