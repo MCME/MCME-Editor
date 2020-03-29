@@ -35,8 +35,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
@@ -60,7 +58,7 @@ public class JobManager {
     
     public static boolean enqueueBlockJob(EditCommandSender owner, boolean weSelection, Set<String> worlds, 
                                           Set<String> rps, JobType type, boolean exactMatch) {
-Logger.getGlobal().info("Enqueue 1!");
+//Logger.getGlobal().info("Enqueue 1!");
         boolean jobStarted = false;
         Region weRegion;
         if(weSelection && owner instanceof EditPlayer && owner.isOnline()) {
@@ -75,7 +73,7 @@ Logger.getGlobal().info("Enqueue 1!");
         } else {
             weRegion = null;
         }
-Logger.getGlobal().info("Enqueue 2!");
+//Logger.getGlobal().info("Enqueue 2!");
         Set<World> validWorlds = new HashSet<>();
         if(worlds.isEmpty()) {
 //Logger.getLogger(JobManager.class.getName()).log(Level.INFO,"JobManager: addallworlds");
@@ -86,7 +84,7 @@ Logger.getGlobal().info("Enqueue 2!");
                     validWorlds.add(Bukkit.getWorld(world));
                 }});
         }
-Logger.getGlobal().info("Enqueue 3!");
+//Logger.getGlobal().info("Enqueue 3!");
         Set<RpRegion> rpRegions = new HashSet<>();
 //Logger.getLogger(JobManager.class.getName()).log(Level.INFO,"JobManager - rps: "+rps.size());
         rps.forEach(rpName -> {
@@ -103,7 +101,7 @@ Logger.getGlobal().info("Enqueue 3!");
                     .forEach(entry -> rpRegions.add(entry.getValue()));
             });
         
-Logger.getGlobal().info("Enqueue 4!");
+//Logger.getGlobal().info("Enqueue 4!");
         final Set<BlockVector2> weSelectionChunks = (weRegion!=null && worlds.contains(weRegion.getWorld().getName())?
                                                  weRegion.getChunks():new HashSet<>());
         for(World world : validWorlds) {
@@ -145,7 +143,7 @@ Logger.getGlobal().info("Enqueue 4!");
                 //TODO add all world chunks (stream to file)
             }
 //Logger.getGlobal().info("chunks: "+chunks.isEmpty());
-Logger.getGlobal().info("Enqueue 5!");
+//Logger.getGlobal().info("Enqueue 5!");
             if(!chunks.isEmpty()) {
 //Logger.getGlobal().info("start job in  world: "+world.getName());
 //Logger.getGlobal().info("size: "+chunks.size());
@@ -170,12 +168,12 @@ Logger.getGlobal().info("Enqueue 5!");
                         job = new SurvivalPrepJob(owner, nextId, world, extraWeRegion, rpWeRegions, 
                                              exactMatch,chunks.size()); break;
                 }
-Logger.getGlobal().info("Enqueue 6!");
+//Logger.getGlobal().info("Enqueue 6!");
                 nextId++;
                 jobQueue.add(job);
                 job.start();
                 jobStarted = true;
-Logger.getGlobal().info("Enqueue 7!");
+//Logger.getGlobal().info("Enqueue 7!");
             }
         }
         return jobStarted;
@@ -185,6 +183,7 @@ Logger.getGlobal().info("Enqueue 7!");
         File[] files = PluginData.getJobFolder().listFiles(file -> file.getName()
                                                           .endsWith(AbstractJob.jobDataFileExt));
         for(File file: files) {
+//Logger.getGlobal().info("File: "+file.getName());
             AbstractJob job = AbstractJob.loadJob(file);
             if(job!=null) {
                 nextId = Math.max(nextId, job.getId()+1);
