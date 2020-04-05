@@ -38,11 +38,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Manages
@@ -50,8 +48,8 @@ import org.bukkit.scheduler.BukkitTask;
  */
 public class JobManager {
     
-    private static BukkitTask asyncScheduler;
-    private static BukkitTask syncScheduler;
+    private static AsyncJobScheduler asyncScheduler;
+    private static SyncJobScheduler syncScheduler;
     
     private static PriorityQueue<AbstractJob> jobQueue = new PriorityQueue<>();
     
@@ -62,7 +60,7 @@ public class JobManager {
     }
 
     
-    public static boolean enqueueBlockJob(EditCommandSender owner, boolean weSelection, Set<String> worlds, 
+    public static synchronized boolean enqueueBlockJob(EditCommandSender owner, boolean weSelection, Set<String> worlds, 
                                           Set<String> rps, JobType type, boolean exactMatch) {
         boolean jobStarted = false;
         Region weRegion;
@@ -166,7 +164,7 @@ public class JobManager {
         return jobStarted;
     }
     
-    public static void loadJobs() {
+    public static synchronized void loadJobs() {
         File[] files = PluginData.getJobFolder().listFiles(file -> file.getName()
                                                           .endsWith(AbstractJob.jobDataFileExt));
         for(File file: files) {
@@ -180,7 +178,7 @@ public class JobManager {
         }
     }
     
-    public static void dequeueJob(int id) {
+    public static synchronized void dequeueJob(int id) {
         AbstractJob job = getJob(id);
         if(job != null && AbstractJob.getDequeueableStates().contains(job.getStatus())) {
             job.cleanup();
@@ -188,15 +186,17 @@ public class JobManager {
         }
     }
     
-    public static Iterator<AbstractJob> getJobs() {
-        return jobQueue.iterator();
+    public static synchronized Iterator<AbstractJob> getJobs() {
+        List<AbstractJob> list = new ArrayList<>();
+        list.addAll(jobQueue);
+        return list.iterator();//Arrays.asList(jobQueue.toArray(new AbstractJob[0])).iterator();
     }
 
-    public static AbstractJob getJob(int jobId) {
+    public static synchronized AbstractJob getJob(int jobId) {
             return jobQueue.stream().filter(job -> job.getId()==jobId).findAny().orElse(null);
     }
 
-    public static void suspendAllJobs(EditCommandSender sender, boolean all) {
+    public static synchronized void suspendAllJobs(EditCommandSender sender, boolean all) {
         jobQueue.forEach(job -> job.suspend());
     }
 
@@ -204,7 +204,7 @@ public class JobManager {
         getJob(jobId).suspend();
     }
 
-    public static void resumeAllJobs(EditCommandSender sender, boolean all) {
+    public static synchronized void resumeAllJobs(EditCommandSender sender, boolean all) {
         jobQueue.forEach(job -> job.resume());
     }
 
@@ -212,7 +212,7 @@ public class JobManager {
         getJob(jobId).resume();
     }
 
-    public static void cancelAllJobs(EditCommandSender sender, boolean all) {
+    public static synchronized void cancelAllJobs(EditCommandSender sender, boolean all) {
         jobQueue.forEach(job -> job.cancel());
     }
 
@@ -220,7 +220,7 @@ public class JobManager {
         getJob(jobId).cancel();
     }
   
-    public static void dequeueAllJobs(EditCommandSender sender, boolean all) {
+    public static synchronized void dequeueAllJobs(EditCommandSender sender, boolean all) {
         jobQueue.forEach(job -> {
             dequeueJob(job.getId());
         });
@@ -236,18 +236,48 @@ public class JobManager {
     
     public static boolean startJobScheduler() {
         if((syncScheduler==null && asyncScheduler==null)
-                || syncScheduler.isCancelled() && asyncScheduler.isCancelled()) {
-            syncScheduler = new SyncJobScheduler().runTaskTimer(EditorPlugin.getInstance(), 10, 1);
-            asyncScheduler = new AsyncJobScheduler().runTaskLaterAsynchronously(EditorPlugin.getInstance(),5);
+                || syncScheduler.isCancelled() && asyncScheduler.isEnded()) {
+            syncScheduler = new SyncJobScheduler();//.runTaskTimer(EditorPlugin.getInstance(), 10, 1);
+            asyncScheduler = new AsyncJobScheduler();//.runTaskLaterAsynchronously(EditorPlugin.getInstance(),5);
             return true;
         } else {
             return false;
         }
     }
     
-    public static void stopJobScheduler() {
+    public static synchronized void stopJobScheduler() {
         syncScheduler.cancel();
         asyncScheduler.cancel();
+        jobQueue.forEach((job) -> {
+            job.releaseChunkTickets();
+        });
+    }
+    
+    public static void restartJobScheduler(EditCommandSender sender) {
+        suspendAllJobs(sender, true);
+        new BukkitRunnable() {
+            boolean stopped = false;
+            @Override
+            public void run() {
+                if(!stopped) {
+                    sender.info("Stopping Editor Queue...");
+                    stopJobScheduler();
+                    stopped = true;
+                } else {
+                    if(asyncScheduler.isEnded()) {
+                        synchronized(this) {
+                            jobQueue.clear();
+                        }
+                        loadJobs();
+                        startJobScheduler();
+                        cancel();
+                        sender.info("Editor Queue restart complete.");
+                    } else {
+                        sender.info("Waiting for the Editor Queue to finish shutdown..."+asyncScheduler.isRunning()+" "+asyncScheduler.isQueued());
+                    }
+                }
+            }
+        }.runTaskTimer(EditorPlugin.getInstance(), 100, 100);
     }
     
     //replacement for broken method from WorldEdit Polygonal2DRegion in FAWE 1.14.151

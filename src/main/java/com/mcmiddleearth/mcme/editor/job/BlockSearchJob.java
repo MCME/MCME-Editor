@@ -241,7 +241,7 @@ public abstract class BlockSearchJob extends AbstractJob{
                         }
 //Logger.getGlobal().info("action: "+action);
                         if(action!=null) {
-                            BlockData replace = action.apply(data, new Vector(chunk.getX()*16+i,k,chunk.getZ()+j));
+                            BlockData replace = action.apply(data, new Vector(chunk.getX()*16+i,k,chunk.getZ()*16+j));
 //Logger.getGlobal().info("replace: "+replace);
                             if(replace!=null) {
                                 edit.add(new Vector(i,k,j), replace);
