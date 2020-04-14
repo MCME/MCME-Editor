@@ -26,6 +26,7 @@ import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.queue.ReadingQueue;
 import com.mcmiddleearth.mcme.editor.queue.WritingQueue;
+import com.mcmiddleearth.mcme.editor.util.Profiler;
 import com.mcmiddleearth.mcme.editor.util.ProgressMessenger;
 import com.mcmiddleearth.mcme.editor.util.RegionUtil;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -38,7 +39,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,12 +47,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -60,6 +60,13 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 public abstract class AbstractJob implements Comparable<AbstractJob>{
     
+    @Getter
+    @Setter
+    private boolean sendUpdates = true;
+    
+    @Setter
+    @Getter
+    private static int maxChunkTickets;
     
     private ReadingQueue readingQueue;
     protected WritingQueue writingQueue;
@@ -97,6 +104,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     
     @Getter
     private int current=0;
+    private int lastCurrent; //For processing speed calculation
+    private long lastCurrentTime; //For processing speed calculation
     private int unrequested;
     
     @Getter
@@ -182,8 +191,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         unrequested=size-current;
         statusRequested = JobStatus.valueOf(config.getString("status", JobStatus.SUSPENDED.name()));
 //Logger.getGlobal().info("job status: "+id+" "+statusRequested);
-        setYRange();
         loadRegionsFromFile();
+        setYRange();
     }
     
     public AbstractJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, int size, boolean includeItemBlocks) {
@@ -397,7 +406,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         readingQueue.request(request);
         unrequested -= request.size();
     }
-
+    
     public boolean hasEdit() {
         return writingQueue.hasEdit();
     }
@@ -408,12 +417,12 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         try {
             edit.applyEdits(world);
         } finally {
-            new BukkitRunnable() {
+            /*new BukkitRunnable() {
                 @Override
                 public void run() {
                     world.removePluginChunkTicket(edit.getChunkX(), edit.getChunkZ(), EditorPlugin.getInstance());
                 }
-            }.runTaskLater(EditorPlugin.getInstance(), 6);
+            }.runTaskLater(EditorPlugin.getInstance(), 6);*/
         }
 //Logger.getGlobal().info("Edit Chunk: "+current);
         current++;
@@ -430,27 +439,74 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     }
 
     public boolean needsChunks() {
-        return readingQueue.remainingChunkCapacity()>0;
+        return readingQueue.remainingChunkCapacity()>0
+                && (world.getPluginChunkTickets().get(EditorPlugin.getInstance()) == null
+                        || world.getPluginChunkTickets().get(EditorPlugin.getInstance()).size() <= maxChunkTickets);
     }
     
     public void serveChunkRequest() {
 //Logger.getGlobal().info("serveing Chunk request: ");
+//Collection collection = world.getPluginChunkTickets().get(EditorPlugin.getInstance());
+//Logger.getGlobal().info("Open chunk tickes: "+(collection!=null?collection.size():0));
+        //Profiler.start("request");
         ChunkPosition chunk = readingQueue.nextRequest();
-        world.addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
+        //Profiler.stop("request");
+        //Profiler.start("ticket");
+        //world.addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
+        //Profiler.stop("ticket");
+        Profiler.start("put");
         readingQueue.putChunk(new EditChunkSnapshot(world.getChunkAt(chunk.getX(),chunk.getZ()),includeItemBlocks));
+        Profiler.stop("put");
+    }
+    
+    public void releaseChunkTickets() {
+        world.removePluginChunkTickets(EditorPlugin.getInstance());
+    }
+
+    public void resetProcessingSpeed() {
+        lastCurrent = current;
+        lastCurrentTime = System.currentTimeMillis();
+    }
+       
+    public double getProcessingSpeed() {
+        long time = System.currentTimeMillis();
+        double result = ((current - lastCurrent)/((time-lastCurrentTime)/1e3));
+        lastCurrent = current;
+        lastCurrentTime = time;
+        return result;
+    }
+    
+    public double getTimeToFinish(double processingSpeed) {
+        return (getSize()-getCurrent())/processingSpeed;
     }
     
     public String progresMessage() {
-        String ratio = ""+(getCurrent()*1.0/getSize()*100);
-        ratio = ratio.substring(0,Math.min(5, ratio.length()));
-        return "Done: "+ratio+"% ("+getCurrent()+" of "+getSize()+" chunks)";
+//        Collection collection = world.getPluginChunkTickets().get(EditorPlugin.getInstance());
+//Logger.getGlobal().info("Open chunk tickes: "+(collection!=null?collection.size():0));
+        double ratio = (getCurrent()*1.0/getSize()*100);
+        double speed;
+        double timeToFinish;
+        if(status.equals(JobStatus.RUNNING)) {
+            speed = getProcessingSpeed();
+            timeToFinish = getTimeToFinish(speed);
+        } else {
+            speed = 0;
+            timeToFinish = 0;
+        }
+        speed = (speed<0.001?0:speed);
+        long timeElapsed = (System.currentTimeMillis()-startTime)/1000;
+        return String.format(ChatColor.BLACK+"..._n_Processing rate: _h_%1$.3g_n_ chunks/second\n"
+                            +ChatColor.BLACK+"..._n_Done: _h_%2$.3g%%_n_ (_h_%3$d_n_ of _h_%4$d_n_ chunks)\n"
+                            +ChatColor.BLACK+"..._n_Elapsed: _h_%5$d_n_ seconds Left: _h_"+(timeToFinish>0?"%6$.0f_n_ seconds":"unknown_n_"),
+                              speed,ratio,getCurrent(),getSize(),timeElapsed,timeToFinish);
+                     //.replace("_n_", ""+getOwner().infoColor()).replace("_h_", ""+getOwner().stressedColor()); moved to AsyncJobScheduler
     }
     
     public abstract String getResultMessage();
     
     private void saveJobStatus() {
         try {
-Logger.getGlobal().info("saveJobStatus: "+statusRequested.name());
+//Logger.getGlobal().info("saveJobStatus: "+statusRequested.name());
             config.set("status", statusRequested.name());
             config.save(jobDataFile);
         } catch (IOException ex) {

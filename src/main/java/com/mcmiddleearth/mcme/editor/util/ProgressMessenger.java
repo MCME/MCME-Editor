@@ -51,5 +51,16 @@ public class ProgressMessenger {
             lastMessage = time;
         }
     }
+    
+    public static String formatProgressMessage(String message) {
+        return message.replace("_n_", infoColor()).replace("_h_", stressedColor());
+    }
+    
+    public static String infoColor() {
+        return ""+EditorPlugin.getMessageUtil().INFO;
+    }
+    public static String stressedColor() {
+        return ""+EditorPlugin.getMessageUtil().STRESSED;
+    }
 }
 

@@ -19,7 +19,6 @@ package com.mcmiddleearth.mcme.editor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
@@ -32,12 +31,19 @@ import org.bukkit.permissions.PermissionDefault;
 public enum Permissions {
     
     BLOCK               ("mcmeeditor.command.block",            PermissionDefault.OP),
-    BLOCK_FILES         ("mcmeeditor.command.block.files",      PermissionDefault.OP, BLOCK),
-    BLOCK_QUEUE         ("mcmeeditor.command.block.queue",      PermissionDefault.OP, BLOCK),
-    BLOCK_QUEUE_OTHER   ("mcmeeditor.command.block.queue.other",      PermissionDefault.OP, BLOCK_QUEUE),
-    BLOCK_COUNT         ("mcmeeditor.command.block.count",      PermissionDefault.OP, BLOCK),
-    BLOCK_REPLACE       ("mcmeeditor.command.block.replace",    PermissionDefault.OP, BLOCK),
-    BLOCK_PLACE_ITEMBLOCK ("mcmeeditor.command.block.place.itemblock",    PermissionDefault.OP, BLOCK),
+    BLOCK_FILES         ("mcmeeditor.command.block.files",      PermissionDefault.OP),
+    BLOCK_COUNT         ("mcmeeditor.command.block.count",      PermissionDefault.OP),
+    BLOCK_REPLACE       ("mcmeeditor.command.block.replace",    PermissionDefault.OP),
+    BLOCK_PLACE_ITEMBLOCK ("mcmeeditor.command.block.place.itemblock", PermissionDefault.OP),
+    QUEUE_RESTART       ("mcmeeditor.command.queue.restart",    PermissionDefault.OP),
+    QUEUE_CONFIG        ("mcmeeditor.command.queue.config",     PermissionDefault.OP),
+    QUEUE               ("mcmeeditor.command.queue",            PermissionDefault.OP),
+    QUEUE_SUSPEND       ("mcmeeditor.command.queue.suspend",    PermissionDefault.OP),
+    QUEUE_CANCEL        ("mcmeeditor.command.queue.cancel",     PermissionDefault.OP),
+    QUEUE_DELETE        ("mcmeeditor.command.queue.delete",     PermissionDefault.OP),
+    QUEUE_RESUME        ("mcmeeditor.command.queue.resume",     PermissionDefault.OP),
+    QUEUE_OTHER         ("mcmeeditor.command.queue.other",      PermissionDefault.OP),
+    QUEUE_UPDATES       ("mcmeeditor.command.queue.updates",    PermissionDefault.OP),
     CLIPBOARD_LIMIT     ("mcmeeditor.clipboard.limit",          PermissionDefault.OP),
     CLIPBOARD_UNLIMITED ("mcmeeditor.clipboard.unlimited",      PermissionDefault.OP),
     CLIPBOARD_COPY      ("mcmeeditor.command.copy",             PermissionDefault.OP),
