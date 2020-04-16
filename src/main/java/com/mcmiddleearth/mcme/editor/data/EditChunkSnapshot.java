@@ -50,16 +50,16 @@ public class EditChunkSnapshot {
                     int contentDamage = SpecialBlockItemBlock.getContentDamage((ArmorStand)entity);
                     //int[] coords = SpecialBlockItemBlock.getCoordinatesFromArmorStand((ArmorStand)entity); Doesn't work for WE copies.
                     Location armorLoc = entity.getLocation();
-Logger.getGlobal().info("Armor stand found: "+armorLoc.getX()+" "+armorLoc.getY()+" "+armorLoc.getZ());
+//Logger.getGlobal().info("Armor stand found: "+armorLoc.getX()+" "+armorLoc.getY()+" "+armorLoc.getZ());
                     SpecialBlockItemBlock specialBlock = (SpecialBlockItemBlock) SpecialBlockInventoryData
                                                                  .getSpecialBlock(SpecialBlockItemBlock
                                                                                   .getIdFromArmorStand((ArmorStand)entity));
                     if(specialBlock!=null) {
-Logger.getGlobal().info("specialBlock: "+specialBlock);
+//Logger.getGlobal().info("specialBlock: "+specialBlock);
                         Block block = specialBlock.getBlock(armorLoc);
-Logger.getGlobal().info("Block found: "+block.getX()+" "+block.getY()+" "+block.getZ());
+//Logger.getGlobal().info("Block found: "+block.getX()+" "+block.getY()+" "+block.getZ());
                         if(!specialBlock.isArmorStandChanged((ArmorStand)entity, block)) {
-    Logger.getGlobal().info("adding item block data!");
+//    Logger.getGlobal().info("adding item block data!");
                             //BlockData blockData = chunk.getBlock(toChunkCoord(coords[0]), coords[1], toChunkCoord(coords[2])).getBlockData();
                             itemBlockData.put(new Vector(toChunkCoord(block.getX()),block.getY(), toChunkCoord(block.getZ())),
                                               new ItemBlockData(block.getBlockData(),specialBlock,contentDamage,entity.getLocation().getYaw()));
