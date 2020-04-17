@@ -45,6 +45,8 @@ public class EditChunkSnapshot {
         vanillaBlockData = chunk.getChunkSnapshot(true, true, true);
         if(enableItemBlocks) {
             for(Entity entity: chunk.getEntities()) {
+//Logger.getGlobal().info("entitiy found: "+entity.toString());
+//Logger.getGlobal().info("         name: "+entity.getCustomName());
                 if(entity instanceof ArmorStand && SpecialBlockItemBlock.isItemBlockArmorStand((ArmorStand)entity)) {
                     //String id = SpecialBlockItemBlock.getIdFromArmorStand((ArmorStand)entity);
                     int contentDamage = SpecialBlockItemBlock.getContentDamage((ArmorStand)entity);
