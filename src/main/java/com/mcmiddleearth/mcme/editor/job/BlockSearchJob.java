@@ -18,6 +18,7 @@ package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.architect.specialBlockHandling.data.ItemBlockData;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
+import com.mcmiddleearth.mcme.editor.data.ChunkBlockEditData;
 import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
@@ -72,8 +73,8 @@ public abstract class BlockSearchJob extends AbstractJob{
     }
     
     public BlockSearchJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, 
-                          boolean exactMatch, int size, boolean includeItemBlocks) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
-        super(owner, id, world, extraRegion, regions, size, includeItemBlocks);
+                          boolean exactMatch, int size, boolean includeItemBlocks, boolean refreshChunks) {//boolean weSelection, Set<String> worlds, Set<String> rps) {
+        super(owner, id, world, extraRegion, regions, size, includeItemBlocks, refreshChunks);
         this.exactMatch = exactMatch;
         saveJobDataToFile();
         createFileObjects();
@@ -197,7 +198,7 @@ public abstract class BlockSearchJob extends AbstractJob{
             complete = true;
         }
 //Logger.getGlobal().info("complete: "+complete);
-        ChunkEditData edit = new ChunkEditData(chunk.getX(),chunk.getZ());
+        ChunkBlockEditData edit = new ChunkBlockEditData(chunk.getX(),chunk.getZ());
         for(int i=0; i<16; i++) {
             for(int j=0; j<16; j++) {
 //Logger.getGlobal().info("maxY: "+getMaxY());

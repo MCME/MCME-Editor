@@ -18,6 +18,10 @@ commands:
       description: count selected (replace and switch) blocks
       usage: /replace [-p | -m]    
       aliases: rpl
+   calclight:
+      description: recalculates light
+      usage: /calclight [-p | -m]    
+      aliases: clght
    queue:
       description: manage editor queue
       usage: /queue list|suspend|resume|cancel   

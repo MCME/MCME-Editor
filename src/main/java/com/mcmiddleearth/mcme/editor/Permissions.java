@@ -35,6 +35,7 @@ public enum Permissions {
     BLOCK_COUNT         ("mcmeeditor.command.block.count",      PermissionDefault.OP),
     BLOCK_REPLACE       ("mcmeeditor.command.block.replace",    PermissionDefault.OP),
     BLOCK_PLACE_ITEMBLOCK ("mcmeeditor.command.block.place.itemblock", PermissionDefault.OP),
+    FIX_LIGHT           ("mcmeeditor.command.fixlight",         PermissionDefault.OP),
     QUEUE_RESTART       ("mcmeeditor.command.queue.restart",    PermissionDefault.OP),
     QUEUE_CONFIG        ("mcmeeditor.command.queue.config",     PermissionDefault.OP),
     QUEUE               ("mcmeeditor.command.queue",            PermissionDefault.OP),

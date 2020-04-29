@@ -166,7 +166,7 @@ public abstract class EditCommandSender {
                     break;
                 }
                 if(line.startsWith("minecraft:")) {
-                    BlockData data = Bukkit.createBlockData(line);
+                    BlockData data = Bukkit.createBlockData(line.trim());
                     counts.add(data);
                 }
             }
@@ -177,11 +177,11 @@ public abstract class EditCommandSender {
                 }
                 if(line.startsWith("minecraft:")) {
                     BlockData data1 = Bukkit.createBlockData(line);
-                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
+                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2).trim());
                     replaces.put(data1,data2);
                 } else if(line.startsWith("mcme:")) {
                     BlockData data1 = ItemBlockData.createItemBlockData(line);
-                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
+                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2).trim());
                     replaces.put(data1,data2);
                 }
             }
@@ -192,7 +192,7 @@ public abstract class EditCommandSender {
                 }
                 if(line.startsWith("minecraft:")) {
                     BlockData data1 = Bukkit.createBlockData(line);
-                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2));
+                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(3).trim());
                     switches.put(data1,data2);
                 }
             }

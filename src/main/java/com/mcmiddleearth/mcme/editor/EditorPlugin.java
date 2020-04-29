@@ -18,6 +18,7 @@ package com.mcmiddleearth.mcme.editor;
 
 import com.mcmiddleearth.mcme.editor.command.BlockCommand;
 import com.mcmiddleearth.mcme.editor.command.CountCommand;
+import com.mcmiddleearth.mcme.editor.command.LightCommand;
 import com.mcmiddleearth.mcme.editor.command.QueueCommand;
 import com.mcmiddleearth.mcme.editor.command.ReplaceCommand;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
@@ -44,7 +45,6 @@ import lombok.Getter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
@@ -74,6 +74,7 @@ public class EditorPlugin extends JavaPlugin {
         dispatcher.register(new CountCommand().getCommandTree());
         dispatcher.register(new ReplaceCommand().getCommandTree());
         dispatcher.register(new QueueCommand().getCommandTree());
+        dispatcher.register(new LightCommand().getCommandTree());
         getServer().getPluginManager().registerEvents(new BlockSelectionListener(), this);
         Permissions.register();
         QueueConfiguration.loadConfig();

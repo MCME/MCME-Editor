@@ -40,8 +40,10 @@ public class ReplaceJob extends BlockSearchJob {
     }
     
     public ReplaceJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, 
-                      boolean exactMatch, int size) {
-        super(owner, id, world, extraRegion, regions, exactMatch, size, owner.hasItemBlocksSelected(BlockSelectionMode.REPLACE,BlockSelectionMode.SWITCH));
+                      boolean exactMatch, int size, boolean refreshChunks) {
+        super(owner, id, world, extraRegion, regions, exactMatch, size, 
+              owner.hasItemBlocksSelected(BlockSelectionMode.REPLACE,BlockSelectionMode.SWITCH),
+              refreshChunks);
         int actionId = 0;
         for(Entry<BlockData,BlockData> entry: owner.getReplaces().entrySet()) {
             actions.put(entry.getKey(),new ReplaceAction(actionId,entry.getKey(),entry.getValue()));
