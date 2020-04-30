@@ -64,7 +64,7 @@ public class LightJob extends AbstractJob{
         }
 //Logger.getGlobal().info("complete: "+complete);
         ChunkLightEditData edit = new ChunkLightEditData(chunk.getX(),chunk.getZ());
-        int step = 2;
+        int step = 1;
         for(int i=0; i<16; i+=step) {
             for(int j=0; j<16; j+=step) {
 //Logger.getGlobal().info("maxY: "+getMaxY());
