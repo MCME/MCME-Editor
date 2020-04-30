@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MCME
+ * Copyright (C) 2020 MCME
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,25 +16,35 @@
  */
 package com.mcmiddleearth.mcme.editor.data;
 
-import lombok.Getter;
+import com.mcmiddleearth.pluginutil.NMSUtil;
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.util.Vector;
 
 /**
- * Collection of Block changes in one chunk.
+ *
  * @author Eriol_Eandur
  */
-public abstract class ChunkEditData {
+public class ChunkLightEditData extends ChunkEditData {
+
+    List<Vector> edits = new ArrayList<>();
     
-    @Getter
-    private int chunkX;
-    
-    @Getter
-    private int chunkZ;
-            
-    public ChunkEditData(int chunkX, int chunkZ) {
-        this.chunkX = chunkX;
-        this.chunkZ = chunkZ;
+    public ChunkLightEditData(int chunkX, int chunkZ) {
+        super(chunkX, chunkZ);
     }
     
-    public abstract void applyEdit(World world, boolean refreshChunks);
+    @Override
+    public void applyEdit(World world, boolean refreshChunks) {
+        NMSUtil.calcLight(world.getChunkAt(getChunkX(),getChunkZ()), edits);
+        if(refreshChunks) {
+            world.refreshChunk(getChunkX(), getChunkZ());
+        }
+    }
+    
+    public void add(Vector vec) {
+        edits.add(vec);
+    }
+    
 }

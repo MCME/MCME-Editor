@@ -38,8 +38,10 @@ public class CountJob extends BlockSearchJob {
     }
     
     public CountJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, 
-                    boolean exactMatch, int size) {
-        super(owner, id, world, extraRegion, regions, exactMatch, size, owner.hasItemBlocksSelected(EditCommandSender.BlockSelectionMode.COUNT));
+                    boolean exactMatch, int size, boolean refreshChunks) {
+        super(owner, id, world, extraRegion, regions, exactMatch, size, 
+              owner.hasItemBlocksSelected(EditCommandSender.BlockSelectionMode.COUNT),
+              refreshChunks);
         int actionId = 0;
         for(BlockData blockData: owner.getCounts()) {
             actions.put(blockData,new CountAction(actionId,blockData));

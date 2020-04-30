@@ -17,6 +17,7 @@
 package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
+import com.mcmiddleearth.mcme.editor.data.ChunkBlockEditData;
 import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.sk89q.worldedit.regions.Region;
@@ -43,8 +44,8 @@ public class SetJob extends AbstractJob{
     }
     
     public SetJob(EditCommandSender owner, int id, World world, Region region, List<Region> regions, 
-                      BlockData data, int size, boolean includeItemBlocks) {
-        super(owner, id, world, region, regions, size, includeItemBlocks);
+                      BlockData data, int size, boolean includeItemBlocks, boolean refreshChunks) {
+        super(owner, id, world, region, regions, size, includeItemBlocks,refreshChunks);
         setData = data;
         saveSetDataToFile();
     }
@@ -52,7 +53,7 @@ public class SetJob extends AbstractJob{
     @Override
     public ChunkEditData handle(EditChunkSnapshot editChunk) {
         ChunkSnapshot chunk = editChunk.getChunkSnapshot();
-        ChunkEditData edit = new ChunkEditData(chunk.getX(),chunk.getZ());
+        ChunkBlockEditData edit = new ChunkBlockEditData(chunk.getX(),chunk.getZ());
         for(int i=0; i<16; i++) {
             for(int j=0; j<16; j++) {
 //Logger.getGlobal().info("maxY: "+maxY);

@@ -133,6 +133,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     @Getter
     private int maxY, minY;
     
+    private boolean refreshChunks;
+    
     public static AbstractJob loadJob(File jobFile) {
         int id = Integer.parseInt(jobFile.getName().substring(0, jobFile.getName().indexOf(jobDataFileExt)));
         YamlConfiguration config = new YamlConfiguration();
@@ -172,6 +174,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         includeItemBlocks = config.getBoolean("includeItemBlocks",false);
         startTime = config.getLong("start");
         endTime = config.getLong("end");
+        refreshChunks = config.getBoolean("refreshChunks",false);
         this.owner = owner;
         this.id = id;
         this.world = Bukkit.getWorld(config.getString("world"));
@@ -195,7 +198,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         setYRange();
     }
     
-    public AbstractJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, int size, boolean includeItemBlocks) {
+    public AbstractJob(EditCommandSender owner, int id, World world, Region extraRegion, List<Region> regions, int size, 
+                       boolean includeItemBlocks, boolean refreshChunks) {
         status = JobStatus.CREATION;
         statusRequested = status;
         startTime = System.currentTimeMillis();
@@ -207,6 +211,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         //readSizeFromFile();
         this.size = size;
         unrequested = size;
+        this.refreshChunks = refreshChunks;
         createQueues();
         //initJobData(owner);
         config = new YamlConfiguration();
@@ -219,6 +224,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
             config.set("includeItemBlocks",includeItemBlocks);
             config.set("start",startTime);
             config.set("end", endTime);
+            config.set("refreshChunks",refreshChunks);
             config.set("world", world.getName());
             config.set("type",getType().name());
             config.set("status", status);
@@ -415,7 +421,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         ChunkEditData edit = writingQueue.poll();
         //if(world.getChunkAt(edit.getChunkX(), edit.getChunkZ()).isLoaded()) {
         try {
-            edit.applyEdits(world);
+            edit.applyEdit(world, refreshChunks);
         } finally {
             /*new BukkitRunnable() {
                 @Override
