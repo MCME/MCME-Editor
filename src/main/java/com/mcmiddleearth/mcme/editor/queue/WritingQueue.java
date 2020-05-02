@@ -53,7 +53,7 @@ public class WritingQueue {
         return null;
     }
     
-    private ChunkEditData peek() {
+    public ChunkEditData peek() {
         return queue.element();
     }
     

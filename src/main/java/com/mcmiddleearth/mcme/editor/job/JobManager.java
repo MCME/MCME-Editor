@@ -62,7 +62,6 @@ public class JobManager {
     
     public static synchronized boolean enqueueBlockJob(EditCommandSender owner, boolean weSelection, Set<String> worlds, 
                                           Set<String> rps, JobType type, boolean exactMatch, boolean refreshChunks) {
-        boolean jobStarted = false;
         Region weRegion;
         if(weSelection && owner instanceof EditPlayer && owner.isOnline()) {
             /*WorldEditPlugin worldEdit = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
@@ -76,6 +75,12 @@ public class JobManager {
         } else {
             weRegion = null;
         }
+        return enqueueBlockJob(owner, weRegion, weSelection, worlds, rps, type, exactMatch, refreshChunks);
+    }
+    
+    public static synchronized boolean enqueueBlockJob(EditCommandSender owner, Region weRegion, boolean weSelection, Set<String> worlds, 
+                                          Set<String> rps, JobType type, boolean exactMatch, boolean refreshChunks) {
+        boolean jobStarted = false;
         Set<World> validWorlds = new HashSet<>();
         if(worlds.isEmpty()) {
             validWorlds.addAll(Bukkit.getWorlds());

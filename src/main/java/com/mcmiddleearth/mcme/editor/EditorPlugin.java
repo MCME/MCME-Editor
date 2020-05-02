@@ -27,6 +27,7 @@ import com.mcmiddleearth.mcme.editor.job.JobManager;
 import com.mcmiddleearth.mcme.editor.job.action.CountAction;
 import com.mcmiddleearth.mcme.editor.job.action.ReplaceAction;
 import com.mcmiddleearth.mcme.editor.listener.BlockSelectionListener;
+import com.mcmiddleearth.mcme.editor.listener.LightBrush;
 import com.mcmiddleearth.mcme.editor.queue.QueueConfiguration;
 import com.mcmiddleearth.pluginutil.message.MessageUtil;
 import com.mojang.brigadier.CommandDispatcher;
@@ -76,6 +77,7 @@ public class EditorPlugin extends JavaPlugin {
         dispatcher.register(new QueueCommand().getCommandTree());
         dispatcher.register(new LightCommand().getCommandTree());
         getServer().getPluginManager().registerEvents(new BlockSelectionListener(), this);
+        getServer().getPluginManager().registerEvents(new LightBrush(), this);
         Permissions.register();
         QueueConfiguration.loadConfig();
         JobManager.loadJobs();

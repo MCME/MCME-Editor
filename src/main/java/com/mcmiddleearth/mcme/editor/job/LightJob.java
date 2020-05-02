@@ -16,19 +16,18 @@
  */
 package com.mcmiddleearth.mcme.editor.job;
 
-import com.mcmiddleearth.architect.specialBlockHandling.data.ItemBlockData;
+import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.ChunkLightEditData;
+import com.mcmiddleearth.mcme.editor.data.ChunkPosition;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
-import com.mcmiddleearth.mcme.editor.job.action.CountAction;
 import com.sk89q.worldedit.regions.Region;
 import java.util.List;
-import java.util.Map.Entry;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 /**
@@ -36,6 +35,8 @@ import org.bukkit.util.Vector;
  * @author Eriol_Eandur
  */
 public class LightJob extends AbstractJob{
+    
+    private int chunkTicketInfo = 0;
     
     public LightJob(EditCommandSender owner, int id, YamlConfiguration config) {
         super(owner, id, config);
@@ -96,4 +97,40 @@ public class LightJob extends AbstractJob{
 
     @Override
     public void saveLogsToFile() {}
+    
+    @Override
+    public void serveChunkRequest() {
+        ChunkPosition chunk = readingQueue.nextRequest();
+        getWorld().addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
+        super.serveChunkRequest();
+    }
+    
+    @Override
+    public void editChunk() {
+        ChunkEditData edit = writingQueue.peek();
+        int chunkX = edit.getChunkX();
+        int chunkZ = edit.getChunkZ();
+        try {
+            super.editChunk();
+        } finally {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    getWorld().removePluginChunkTicket(chunkX, chunkZ, EditorPlugin.getInstance());
+                }
+            }.runTaskLater(EditorPlugin.getInstance(), 6);
+        }
+    }
+
+    @Override
+    public String progresMessage() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                chunkTicketInfo = getWorld().getPluginChunkTickets().size();
+            }
+        }.runTask(EditorPlugin.getInstance());
+        return super.progresMessage()+" (Tickets: "+chunkTicketInfo+")";
+    }
+
 }
