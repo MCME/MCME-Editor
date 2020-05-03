@@ -53,6 +53,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -390,6 +391,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     public abstract ChunkEditData handle(EditChunkSnapshot chunk);
     
     public void work() {
+//Logger.getGlobal().info("work:");
         while(readingQueue.hasChunk()) {
 //Logger.getGlobal().info("handle chunk (current unrequested):" +current+" "+unrequested);
             ChunkEditData data = handle(readingQueue.pollChunk());
@@ -399,6 +401,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     }
 
     public void requestChunks() {
+//Logger.getGlobal().info("request:");
         int remaining = readingQueue.remainingRequestsCapacity();
         List<ChunkPosition> request = new ArrayList<>();
         for(int i = 0; i < remaining && i < unrequested; i++) {
@@ -423,12 +426,12 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         try {
             edit.applyEdit(world, refreshChunks);
         } finally {
-            /*new BukkitRunnable() {
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     world.removePluginChunkTicket(edit.getChunkX(), edit.getChunkZ(), EditorPlugin.getInstance());
                 }
-            }.runTaskLater(EditorPlugin.getInstance(), 6);*/
+            }.runTaskLater(EditorPlugin.getInstance(), 6);
         }
 //Logger.getGlobal().info("Edit Chunk: "+current);
         current++;
