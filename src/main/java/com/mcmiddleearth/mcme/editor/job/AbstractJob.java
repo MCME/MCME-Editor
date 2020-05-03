@@ -68,7 +68,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
     @Getter
     private static int maxChunkTickets;
     
-    private ReadingQueue readingQueue;
+    protected ReadingQueue readingQueue;
     protected WritingQueue writingQueue;
     
     @Getter
@@ -458,7 +458,7 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
         ChunkPosition chunk = readingQueue.nextRequest();
         //Profiler.stop("request");
         //Profiler.start("ticket");
-        //world.addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
+        world.addPluginChunkTicket(chunk.getX(),chunk.getZ(), EditorPlugin.getInstance());
         //Profiler.stop("ticket");
         Profiler.start("put");
         readingQueue.putChunk(new EditChunkSnapshot(world.getChunkAt(chunk.getX(),chunk.getZ()),includeItemBlocks));

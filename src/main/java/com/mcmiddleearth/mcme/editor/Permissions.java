@@ -53,8 +53,8 @@ public enum Permissions {
     CLIPBOARD_ROTATE    ("mcmeeditor.command.rotate",           PermissionDefault.OP),
     CLIPBOARD_REDO      ("mcmeeditor.command.redo",             PermissionDefault.OP),
     CLIPBOARD_UNDO      ("mcmeeditor.command.undo",             PermissionDefault.OP),
-    CLIPBOARD_PASTE     ("mcmeeditor.command.paste",            PermissionDefault.OP);
-    
+    CLIPBOARD_PASTE     ("mcmeeditor.command.paste",            PermissionDefault.OP),
+    LIGHT_BRUSH         ("mcmeeditor.brush.light",              PermissionDefault.OP);
     
     @Getter
     private final String permissionNode;
