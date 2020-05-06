@@ -157,6 +157,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
                     return new CountJob(owner,id, config);
                 case REPLACE:
                     return new ReplaceJob(owner,id, config);
+                case LIGHT:
+                    return new LightJob(owner,id, config);
                 case SURVIVAL_PREP:
                     return new SurvivalPrepJob(owner,id, config);
                 default:
