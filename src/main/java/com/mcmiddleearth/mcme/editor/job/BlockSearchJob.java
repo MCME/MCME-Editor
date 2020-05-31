@@ -202,7 +202,8 @@ public abstract class BlockSearchJob extends AbstractJob{
         for(int i=0; i<16; i++) {
             for(int j=0; j<16; j++) {
 //Logger.getGlobal().info("maxY: "+getMaxY());
-                for(int k=getMinY(); k<=Math.min(chunk.getHighestBlockYAt(i, j),getMaxY());k++) {
+//Logger.getGlobal().info("maxY at "+i+" "+j+": "+chunk.getHighestBlockYAt(j, j));
+                for(int k=getMinY(); k<=/*Math.min(chunk.getHighestBlockYAt(i, j),*/getMaxY();k++) {
 //Logger.getGlobal().info("inside: "+isInside(chunk.getX(),chunk.getZ(),i,k,j)+" "+complete);
                     if(complete || isInside(chunk.getX(),chunk.getZ(),i,k,j)) {
 //Logger.getGlobal().info("checking: "+i+" "+k+" "+j);
@@ -230,10 +231,10 @@ public abstract class BlockSearchJob extends AbstractJob{
                                     }
                                 } else {
 //Logger.getGlobal().info(" no itemBlock! "+search.getKey().toString());
-    //Logger.getGlobal().info("search: "+search.getValue().toString());
-    //Logger.getGlobal().info("data: "+data.toString());
+//    Logger.getGlobal().info("search: "+search.getValue().getSearchData().getAsString());
+//    Logger.getGlobal().info("data: "+data.getAsString());
                                     if(data.matches(search.getKey())) {
-    //Logger.getGlobal().warning("Match!");
+//    Logger.getGlobal().warning("Match!");
                                         action = search.getValue();
                                         break;
                                     }
