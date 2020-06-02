@@ -69,7 +69,7 @@ public class LightJob extends AbstractJob{
         for(int i=0; i<16; i+=step) {
             for(int j=0; j<16; j+=step) {
 //Logger.getGlobal().info("maxY: "+getMaxY());
-                for(int k=getMinY(); k<=Math.min(chunk.getHighestBlockYAt(i, j),getMaxY());k+=step) {
+                for(int k=getMaxY(); k>=getMinY();k-=step) {
 //Logger.getGlobal().info("inside: "+isInside(chunk.getX(),chunk.getZ(),i,k,j)+" "+complete);
                     if(complete || isInside(chunk.getX(),chunk.getZ(),i,k,j)) {
 //Logger.getGlobal().info("checking: "+i+" "+k+" "+j);
