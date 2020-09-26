@@ -17,8 +17,10 @@
 package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
-import com.mcmiddleearth.mcme.editor.data.ChunkBlockEditData;
-import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
+import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
+import com.mcmiddleearth.mcme.editor.data.block.SimpleBlockData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkBlockEditData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.sk89q.worldedit.regions.Region;
 import java.util.List;
@@ -74,7 +76,7 @@ public class SurvivalPrepJob extends BlockSearchJob {
                     if(complete || isInside(chunk.getX(),chunk.getZ(),i,k,j)) {
                         if(isSand(chunk, edit, i,k,j) 
                                 && !isWaterOrAirAround(chunk, edit, i,k,j)) {
-                            edit.add(new Vector(i,k,j),Bukkit.createBlockData(Material.STONE));
+                            edit.add(new Vector(i,k,j),new SimpleBlockData(Bukkit.createBlockData(Material.STONE)));
                         }
                     }
                 }
@@ -120,38 +122,38 @@ public class SurvivalPrepJob extends BlockSearchJob {
         int counter = 0;
         while(counter<size) {
             if(isMaterial(chunk,edit,x,y,z,Material.STONE)) {
-                if(edit.add(new Vector(x,y,z),Bukkit.createBlockData(mat))) {
+                if(edit.add(new Vector(x,y,z),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                     counter++;
                 }
             }
             if(step>0 && Math.random()>0.5 && isMaterial(chunk,edit,x-1,y,z,Material.STONE)) {
-                if(edit.add(new Vector(x-1,y,z),Bukkit.createBlockData(mat))) {
+                if(edit.add(new Vector(x-1,y,z),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                     counter++;
                 }
             }
             if(step>0 && Math.random()>0.5 && isMaterial(chunk,edit,x,y,z-1,Material.STONE)) {
-                if(edit.add(new Vector(x,y,z-1),Bukkit.createBlockData(mat))) {
+                if(edit.add(new Vector(x,y,z-1),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                     counter++;
                 }
             }
             if(step>0 && Math.random()>0.5 && isMaterial(chunk,edit,x-1,y,z-1,Material.STONE)) {
-                if(edit.add(new Vector(x-1,y,z-1),Bukkit.createBlockData(mat))) {
+                if(edit.add(new Vector(x-1,y,z-1),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                     counter++;
                 }
             }
             if(counter<size-3) {
                 if(step>0 && Math.random()>0.5 && isMaterial(chunk,edit,x-1,y-1,z,Material.STONE)) {
-                    if(edit.add(new Vector(x-1,y-1,z),Bukkit.createBlockData(mat))) {
+                    if(edit.add(new Vector(x-1,y-1,z),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                         counter++;
                     }
                 }
                 if(step>0 && Math.random()>0.5 && isMaterial(chunk,edit,x,y-1,z-1,Material.STONE)) {
-                    if(edit.add(new Vector(x,y-1,z-1),Bukkit.createBlockData(mat))) {
+                    if(edit.add(new Vector(x,y-1,z-1),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                         counter++;
                     }
                 }
                 if(step>0 && Math.random()>0.5 && isMaterial(chunk,edit,x-1,y-1,z-1,Material.STONE)) {
-                    if(edit.add(new Vector(x-1,y-1,z-1),Bukkit.createBlockData(mat))) {
+                    if(edit.add(new Vector(x-1,y-1,z-1),new SimpleBlockData(Bukkit.createBlockData(mat)))) {
                         counter++;
                     }
                 }
@@ -166,9 +168,9 @@ public class SurvivalPrepJob extends BlockSearchJob {
     
     private boolean isMaterial(ChunkSnapshot chunk, ChunkBlockEditData edit, int x, int y, int z, Material mat) {
         if(x<0 || x > 15 || y < 0 || y > 255 || z < 0 || z > 15) return false;
-        BlockData editData = edit.get(new Vector(x,y,z));
+        EditBlockData editData = edit.get(new Vector(x,y,z));
         if(editData!=null) {
-            return editData.getMaterial().equals(mat);
+            return editData.getBlockData().getMaterial().equals(mat);
         } else {
             return chunk.getBlockType(x, y, z).equals(mat);
         }

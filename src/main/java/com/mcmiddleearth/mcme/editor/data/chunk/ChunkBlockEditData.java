@@ -14,11 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.mcmiddleearth.mcme.editor.data;
+package com.mcmiddleearth.mcme.editor.data.chunk;
 
 import com.mcmiddleearth.architect.specialBlockHandling.data.ItemBlockData;
 import com.mcmiddleearth.architect.specialBlockHandling.specialBlocks.SpecialBlockItemBlock;
 import com.mcmiddleearth.mcme.editor.EditorPlugin;
+import com.mcmiddleearth.mcme.editor.data.block.BlockShiftData;
+import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
 import com.mcmiddleearth.mcme.editor.util.Profiler;
 import com.mcmiddleearth.pluginutil.NMSUtil;
 import java.util.HashMap;
@@ -42,7 +44,7 @@ import org.bukkit.util.Vector;
 public class ChunkBlockEditData extends ChunkEditData {
     
     @Getter
-    private Map<Vector,BlockData> changes = new HashMap<>();
+    private Map<Vector,EditBlockData> changes = new HashMap<>();
     
     private Map<Vector,ItemBlockData> removals = new HashMap<>();
     
@@ -50,7 +52,7 @@ public class ChunkBlockEditData extends ChunkEditData {
         super(chunkX, chunkZ);
     }
     
-    public boolean add(Vector vector, BlockData data) {
+    public boolean add(Vector vector, EditBlockData data) {
         if(vector.getBlockX()>=0 && vector.getBlockX()<16
                 && vector.getBlockY()>=0 && vector.getBlockY()<256
                 && vector.getBlockZ()>=0 && vector.getBlockZ()<16) {
@@ -70,7 +72,7 @@ public class ChunkBlockEditData extends ChunkEditData {
         return false;
     }
     
-    public BlockData get(Vector vector) {
+    public EditBlockData get(Vector vector) {
         return changes.get(vector);
     }
     
@@ -142,7 +144,7 @@ Logger.getGlobal().info("Force load: "+chunkX + " "+chunkZ);
             Block block = chunk.getBlock(vector.getBlockX(),
                                vector.getBlockY(),
                                vector.getBlockZ());
-            if(data instanceof ItemBlockData) {
+            if(data.getBlockData() instanceof ItemBlockData) {
                 ItemBlockData itemBlockData = (ItemBlockData) data;
                 block.setBlockData(itemBlockData.getBlockData(),false);
                 itemBlockData.getSpecialItemBlock().placeArmorStand(block, BlockFace.DOWN, 
@@ -153,7 +155,7 @@ Logger.getGlobal().info("Force load: "+chunkX + " "+chunkZ);
                 Block shifted = block.getRelative(((BlockShiftData)data).getDirection(), ((BlockShiftData)data).getShift());
                 shifted.setBlockData(((BlockShiftData)data).getBlockData(),false);
             } else {
-                block.setBlockData(data, false);
+                block.setBlockData(data.getBlockData(), false);
                 //No entity tile found error here.
             }
             NMSUtil.calcLight(block.getLocation());

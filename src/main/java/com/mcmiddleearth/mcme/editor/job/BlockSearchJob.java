@@ -18,8 +18,10 @@ package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.architect.specialBlockHandling.data.ItemBlockData;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
-import com.mcmiddleearth.mcme.editor.data.ChunkBlockEditData;
-import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
+import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
+import com.mcmiddleearth.mcme.editor.data.block.SimpleBlockData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkBlockEditData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import com.mcmiddleearth.mcme.editor.job.action.CountAction;
@@ -68,7 +70,7 @@ public abstract class BlockSearchJob extends AbstractJob{
         ///extraRegion=null;
         List list = config.getList("actions");
         exactMatch = config.getBoolean("exactMatch",true);
-        list.forEach(action->actions.put(((CountAction)action).getSearchData(), (CountAction)action));
+        list.forEach(action->actions.put(((CountAction)action).getSearchData().getBlockData(), (CountAction)action));
         loadResultsFromFile();
     }
     
@@ -243,7 +245,7 @@ public abstract class BlockSearchJob extends AbstractJob{
                         }
 //Logger.getGlobal().info("action: "+action);
                         if(action!=null) {
-                            BlockData replace = action.apply(data, new Vector(chunk.getX()*16+i,k,chunk.getZ()*16+j));
+                            EditBlockData replace = action.apply(data, new Vector(chunk.getX()*16+i,k,chunk.getZ()*16+j));
 //Logger.getGlobal().info("replace: "+replace);
                             if(replace!=null) {
                                 edit.add(new Vector(i,k,j), replace);
