@@ -148,6 +148,10 @@ Logger.getGlobal().info("Force load: "+chunkX + " "+chunkZ);
                 itemBlockData.getSpecialItemBlock().placeArmorStand(block, BlockFace.DOWN, 
                                                      new Location(null,0,0,0,itemBlockData.getYaw()+180,0),
                                                      itemBlockData.getCurrentDamage());
+            } else if(data instanceof BlockShiftData){
+                block.setBlockData(((BlockShiftData)data).getAmbient(),false);
+                Block shifted = block.getRelative(((BlockShiftData)data).getDirection(), ((BlockShiftData)data).getShift());
+                shifted.setBlockData(((BlockShiftData)data).getBlockData(),false);
             } else {
                 block.setBlockData(data, false);
                 //No entity tile found error here.
