@@ -19,6 +19,7 @@ package com.mcmiddleearth.mcme.editor.command.sender;
 import com.mcmiddleearth.architect.specialBlockHandling.data.ItemBlockData;
 import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.Permissions;
+import com.mcmiddleearth.mcme.editor.data.BlockShiftData;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -177,9 +178,15 @@ public abstract class EditCommandSender {
                 }
                 if(line.startsWith("minecraft:")) {
                     BlockData data1 = Bukkit.createBlockData(line);
-                    BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2).trim());
+                    line = reader.nextLine().substring(2).trim();
+                    BlockData data2;
+                    if(line.startsWith(BlockShiftData.NAMESPACE)) {
+                        data2 = BlockShiftData.createBlockShiftData(data1,line);
+                    } else {
+                        data2 = Bukkit.createBlockData(line);
+                    }
                     replaces.put(data1,data2);
-                } else if(line.startsWith("mcme:")) {
+                } else if(line.startsWith(ItemBlockData.NAMESPACE)) {
                     BlockData data1 = ItemBlockData.createItemBlockData(line);
                     BlockData data2 = Bukkit.createBlockData(reader.nextLine().substring(2).trim());
                     replaces.put(data1,data2);

@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.mcmiddleearth.mcme.editor.data.BlockShiftData;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.block.data.BlockData;
@@ -38,12 +40,20 @@ public class ReplaceAction extends CountAction {
     private final String[] flexAttributes;
     
     private final boolean flex;
-    
+
+    private final double probability;
+
     public ReplaceAction(int id, BlockData search, BlockData replace) {
+        this(id, search,replace,1);
+    }
+
+    public ReplaceAction(int id, BlockData search, BlockData replace, double probability) {
         super(id, search);
         replaceData = replace.clone();
+        this.probability = probability;
         List<String> temp = new ArrayList<>();
-        if(!(replace instanceof ItemBlockData)) {
+        if(!(replace instanceof ItemBlockData)
+                && !(replace instanceof BlockShiftData)) {
             String[] all = replaceData.getAsString(false).split("[\\[\\],]");
             String[] specified = replaceData.getAsString(true).split("[\\[\\],]");
             boolean found;
@@ -67,6 +77,9 @@ public class ReplaceAction extends CountAction {
  
     @Override
     public BlockData apply(BlockData found, Vector loc) {
+        if(Math.random()>probability) {
+            return null;
+        }
         applicationCount++;
         if(!flex) {
             return replaceData;
@@ -116,7 +129,12 @@ public class ReplaceAction extends CountAction {
         String search = (String)map.get("search");
         String replace = (String)map.get("replace");
         BlockData searchData = createBlockData(search);
-        BlockData replaceData = createBlockData(replace);
+        BlockData replaceData;
+        if(replace.startsWith(BlockShiftData.NAMESPACE)) {
+            replaceData = BlockShiftData.createBlockShiftData(searchData,replace);
+        } else {
+            replaceData = createBlockData(replace);
+        }
         return new ReplaceAction((int)map.get("id"),searchData,replaceData);
     }
     
