@@ -85,7 +85,7 @@ public class EditorPlugin extends JavaPlugin {
     }
     
     @Override
-    public boolean onCommand​(CommandSender sender, Command command,
+    public boolean onCommand(CommandSender sender, Command command,
                              String alias, String[] args) {
         String input = getInput(command,args);
         ParseResults<EditCommandSender> parseResult = dispatcher.parse(input, EditCommandSender.wrap(sender));

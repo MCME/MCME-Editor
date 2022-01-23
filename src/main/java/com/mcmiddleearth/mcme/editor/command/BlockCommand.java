@@ -228,7 +228,8 @@ Logger.getGlobal().info("Found argument: "+id+":"+dv);
                 dv = NumericUtil.getInt(data[1]);
             }
 //Logger.getGlobal().info("Found argument: "+id+":"+dv);
-            return new SimpleBlockData(BlockDataManager.getBlockData(id,(byte)dv));
+            throw new UnsupportedOperationException("Block definitions by ID and DV are no longer supported.");
+            //return new SimpleBlockData(BlockDataManager.getBlockData(id,(byte)dv));
         } else {
             if(!argument.startsWith("minecraft:")) {
                 argument = "minecraft:"+argument;
