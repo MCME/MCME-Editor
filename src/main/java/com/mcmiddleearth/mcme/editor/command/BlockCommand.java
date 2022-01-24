@@ -16,7 +16,6 @@
  */
 package com.mcmiddleearth.mcme.editor.command;
 
-import com.mcmiddleearth.architect.blockData.BlockDataManager;
 import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.Permissions;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
@@ -27,21 +26,20 @@ import com.mcmiddleearth.mcme.editor.data.block.SimpleBlockData;
 import com.mcmiddleearth.pluginutil.NumericUtil;
 import com.mcmiddleearth.pluginutil.StringUtil;
 import com.mcmiddleearth.pluginutil.message.FancyMessage;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
-import static com.mojang.brigadier.arguments.StringArgumentType.word;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
-import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import org.bukkit.entity.Player;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Bukkit;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
-import sun.java2d.pipe.SpanShapeRenderer;
+
+import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
+import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
+import static com.mojang.brigadier.arguments.StringArgumentType.word;
+import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
+import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 
 /**
  * Manage block rules for jobs. Subcommands: switch, replace, count
