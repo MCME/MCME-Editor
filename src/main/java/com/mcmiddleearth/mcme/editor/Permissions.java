@@ -55,7 +55,7 @@ public enum Permissions {
     CLIPBOARD_UNDO      ("mcmeeditor.command.undo",             PermissionDefault.OP),
     CLIPBOARD_PASTE     ("mcmeeditor.command.paste",            PermissionDefault.OP),
     LIGHT_BRUSH         ("mcmeeditor.brush.light",              PermissionDefault.OP),
-    Y_SHIFT             ("mcmeeditor.brush.light",              PermissionDefault.OP);
+    Y_SHIFT             ("mcmeeditor.command.yshift",           PermissionDefault.OP);
 
     @Getter
     private final String permissionNode;

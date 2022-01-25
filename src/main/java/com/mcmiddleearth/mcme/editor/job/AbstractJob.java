@@ -161,6 +161,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
                     return new LightJob(owner,id, config);
                 case SURVIVAL_PREP:
                     return new SurvivalPrepJob(owner,id, config);
+                case Y_SHIFT:
+                    return new YShiftJob(owner,id,config);
                 default:
                     Logger.getLogger(AbstractJob.class.getName()).log(Level.SEVERE, "Invalid job type.");
             }

@@ -16,11 +16,7 @@
  */
 package com.mcmiddleearth.mcme.editor;
 
-import com.mcmiddleearth.mcme.editor.command.BlockCommand;
-import com.mcmiddleearth.mcme.editor.command.CountCommand;
-import com.mcmiddleearth.mcme.editor.command.LightCommand;
-import com.mcmiddleearth.mcme.editor.command.QueueCommand;
-import com.mcmiddleearth.mcme.editor.command.ReplaceCommand;
+import com.mcmiddleearth.mcme.editor.command.*;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditConsoleSender;
 import com.mcmiddleearth.mcme.editor.job.JobManager;
@@ -76,6 +72,7 @@ public class EditorPlugin extends JavaPlugin {
         dispatcher.register(new ReplaceCommand().getCommandTree());
         dispatcher.register(new QueueCommand().getCommandTree());
         dispatcher.register(new LightCommand().getCommandTree());
+        dispatcher.register(new YShiftCommand().getCommandTree());
         getServer().getPluginManager().registerEvents(new BlockSelectionListener(), this);
         getServer().getPluginManager().registerEvents(new LightBrush(), this);
         Permissions.register();
