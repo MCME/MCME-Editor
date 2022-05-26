@@ -179,7 +179,14 @@ public abstract class EditCommandSender {
                     replaces.put(data1,data2);
                 } else if(line.startsWith(ItemBlockData.NAMESPACE)) {
                     EditBlockData data1 = new SimpleBlockData(ItemBlockData.createItemBlockData(line));
-                    EditBlockData data2 = SimpleBlockData.createBlockData(reader.nextLine().substring(2).trim());
+                    line = reader.nextLine().substring(2).trim();
+                    EditBlockData data2;
+                    if(line.startsWith(ItemBlockData.NAMESPACE)) {
+                        data2 = new SimpleBlockData(ItemBlockData.createItemBlockData(line));
+                    } else {
+                        data2 = SimpleBlockData.createBlockData(line);
+                    }
+Logger.getGlobal().info("data1: "+data1.getBlockData()+" data2: "+data2.getBlockData());
                     replaces.put(data1,data2);
                 }
             }

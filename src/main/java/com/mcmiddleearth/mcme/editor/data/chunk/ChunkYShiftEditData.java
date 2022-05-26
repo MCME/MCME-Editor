@@ -18,6 +18,7 @@ public class ChunkYShiftEditData extends ChunkEditData {
     @Override
     public void applyEdit(World world, boolean refreshChunks) {
         try {
+            world.getChunkAt(getChunkX(),getChunkZ()).getEntities();
             Clipboard clipboard = new Clipboard(new Location(world, getChunkX() * 16, 0, getChunkZ() * 16),
                     new CuboidRegion(new BukkitWorld(world),
                             BlockVector3.at(getChunkX() * 16, 0, getChunkZ() * 16),
