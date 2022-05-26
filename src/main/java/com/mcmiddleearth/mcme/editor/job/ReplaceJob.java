@@ -18,6 +18,7 @@ package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender.BlockSelectionMode;
+import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
 import com.mcmiddleearth.mcme.editor.job.action.ReplaceAction;
 import com.sk89q.worldedit.regions.Region;
 import java.util.List;
@@ -45,14 +46,14 @@ public class ReplaceJob extends BlockSearchJob {
               owner.hasItemBlocksSelected(BlockSelectionMode.REPLACE,BlockSelectionMode.SWITCH),
               refreshChunks);
         int actionId = 0;
-        for(Entry<BlockData,BlockData> entry: owner.getReplaces().entrySet()) {
-            actions.put(entry.getKey(),new ReplaceAction(actionId,entry.getKey(),entry.getValue()));
+        for(Entry<EditBlockData, EditBlockData> entry: owner.getReplaces().entrySet()) {
+            actions.put(entry.getKey().getBlockData(),new ReplaceAction(actionId,entry.getKey(),entry.getValue()));
             actionId++;
         }
-        for(Entry<BlockData,BlockData> entry: owner.getSwitches().entrySet()) {
-            actions.put(entry.getKey(),new ReplaceAction(actionId,entry.getKey(),entry.getValue()));
+        for(Entry<EditBlockData,EditBlockData> entry: owner.getSwitches().entrySet()) {
+            actions.put(entry.getKey().getBlockData(),new ReplaceAction(actionId,entry.getKey(),entry.getValue()));
             actionId++;
-            actions.put(entry.getValue(),new ReplaceAction(actionId,entry.getValue(),entry.getKey()));
+            actions.put(entry.getValue().getBlockData(),new ReplaceAction(actionId,entry.getValue(),entry.getKey()));
             actionId++;
         }
         saveActionsToFile();

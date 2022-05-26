@@ -17,8 +17,10 @@
 package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
-import com.mcmiddleearth.mcme.editor.data.ChunkBlockEditData;
-import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
+import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
+import com.mcmiddleearth.mcme.editor.data.block.SimpleBlockData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkBlockEditData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.sk89q.worldedit.regions.Region;
 import java.io.IOException;
@@ -36,15 +38,15 @@ import org.bukkit.util.Vector;
  */
 public class SetJob extends AbstractJob{
 
-    private BlockData setData;
+    private EditBlockData setData;
     
     public SetJob(EditCommandSender owner, int id, YamlConfiguration config) {
         super(owner, id, config);
-        setData = Bukkit.createBlockData(config.getString("setData"));
+        setData = SimpleBlockData.createBlockData(config.getString("setData"));
     }
     
     public SetJob(EditCommandSender owner, int id, World world, Region region, List<Region> regions, 
-                      BlockData data, int size, boolean includeItemBlocks, boolean refreshChunks) {
+                      EditBlockData data, int size, boolean includeItemBlocks, boolean refreshChunks) {
         super(owner, id, world, region, regions, size, includeItemBlocks,refreshChunks);
         setData = data;
         saveSetDataToFile();

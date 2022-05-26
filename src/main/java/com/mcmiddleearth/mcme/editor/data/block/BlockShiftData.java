@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.mcmiddleearth.mcme.editor.data;
+package com.mcmiddleearth.mcme.editor.data.block;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,7 +27,7 @@ import java.util.Objects;
  *
  * @author Eriol_Eandur
  */
-public class BlockShiftData implements BlockData {
+public class BlockShiftData implements EditBlockData {
 
     private final BlockData blockData;
 
@@ -37,27 +37,30 @@ public class BlockShiftData implements BlockData {
 
     private final int shift;
 
+    private final  double probability;
+
     public static final String NAMESPACE = "mcme_shift";
 
-    public static BlockShiftData createBlockShiftData(BlockData place, String data) {
+    public static BlockShiftData createEditBlockData(BlockData place, String data) {
         String[] firstSplit = data.split("::");
         BlockData ambient = Bukkit.createBlockData(firstSplit[1]);
         String[] BlockShiftData = firstSplit[0].split("[:=\\[,\\]]");
         BlockFace direction = BlockFace.valueOf(BlockShiftData[3].toUpperCase());
         int shift = Integer.parseInt(BlockShiftData[5]);
-        return new BlockShiftData(place, ambient, direction, shift);
+        double probability = (firstSplit.length>2?Double.parseDouble(firstSplit[2])/100:1);
+        return new BlockShiftData(place, ambient, direction, shift, probability);
     }
 
     public BlockShiftData(BlockData blockData, BlockData ambient, BlockFace direction, int shift) {
+        this(blockData,ambient,direction,shift,1);
+    }
+
+    public BlockShiftData(BlockData blockData, BlockData ambient, BlockFace direction, int shift, double probability) {
         this.blockData = blockData;
         this.ambientBlockData = ambient;
         this.shift = shift;
         this.direction = direction;
-    }
-    
-    @Override
-    public Material getMaterial() {
-        return blockData.getMaterial();
+        this.probability = probability;
     }
 
     @Override
@@ -71,18 +74,13 @@ public class BlockShiftData implements BlockData {
     }
 
     @Override
-    public BlockData merge(BlockData bd) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public double getProbability() {
+        return probability;
     }
 
     @Override
-    public boolean matches(BlockData bd) {
-        return false;
-    }
-    
-    @Override
-    public BlockData clone() {
-        return new BlockShiftData(blockData.clone(),ambientBlockData.clone(),direction,shift);
+    public EditBlockData clone() {
+        return new BlockShiftData(blockData.clone(),ambientBlockData.clone(),direction,shift,probability);
     }
 
     @Override

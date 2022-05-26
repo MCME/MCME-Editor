@@ -17,6 +17,7 @@
 package com.mcmiddleearth.mcme.editor.job;
 
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
+import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
 import com.mcmiddleearth.mcme.editor.job.action.CountAction;
 import com.sk89q.worldedit.regions.Region;
 import java.util.List;
@@ -43,8 +44,8 @@ public class CountJob extends BlockSearchJob {
               owner.hasItemBlocksSelected(EditCommandSender.BlockSelectionMode.COUNT),
               refreshChunks);
         int actionId = 0;
-        for(BlockData blockData: owner.getCounts()) {
-            actions.put(blockData,new CountAction(actionId,blockData));
+        for(EditBlockData blockData: owner.getCounts()) {
+            actions.put(blockData.getBlockData(),new CountAction(actionId,blockData));
             actionId++;
         }
         saveActionsToFile();

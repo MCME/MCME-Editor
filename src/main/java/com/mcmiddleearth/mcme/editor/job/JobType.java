@@ -22,5 +22,5 @@ package com.mcmiddleearth.mcme.editor.job;
  */
 public enum JobType {
     
-    COUNT, REPLACE, SURVIVAL_PREP, COPY, PASTE, SET, LIGHT;
+    COUNT, REPLACE, SURVIVAL_PREP, COPY, PASTE, SET, LIGHT, Y_SHIFT;
 }

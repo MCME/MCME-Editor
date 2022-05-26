@@ -20,7 +20,7 @@ import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditConsoleSender;
 import com.mcmiddleearth.mcme.editor.command.sender.EditPlayer;
-import com.mcmiddleearth.mcme.editor.data.ChunkEditData;
+import com.mcmiddleearth.mcme.editor.data.chunk.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.ChunkPosition;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.mcmiddleearth.mcme.editor.data.PluginData;
@@ -161,6 +161,8 @@ public abstract class AbstractJob implements Comparable<AbstractJob>{
                     return new LightJob(owner,id, config);
                 case SURVIVAL_PREP:
                     return new SurvivalPrepJob(owner,id, config);
+                case Y_SHIFT:
+                    return new YShiftJob(owner,id,config);
                 default:
                     Logger.getLogger(AbstractJob.class.getName()).log(Level.SEVERE, "Invalid job type.");
             }

@@ -162,6 +162,8 @@ public class JobManager {
                     case SURVIVAL_PREP:
                         job = new SurvivalPrepJob(owner, nextId, world, extraWeRegion, rpWeRegions, 
                                              exactMatch,chunks.size()); break;
+                    case Y_SHIFT:
+                        job = new YShiftJob(owner, nextId, world, extraWeRegion, rpWeRegions, chunks.size());
                 }
                 nextId++;
                 jobQueue.add(job);
