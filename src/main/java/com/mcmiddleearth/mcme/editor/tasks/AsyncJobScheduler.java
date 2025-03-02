@@ -196,7 +196,7 @@ public class AsyncJobScheduler {
         job.saveLogsToFile();
         job.closeFileStreams();
         if(!checkFail(job)) {
-            job.getOwner().info("Your job #"+job.getId()+" was finished."+job.getResultMessage());
+            job.getOwner().info("Your job #"+job.getId()+" was finished. "+job.getResultMessage());
         }
     }
     

@@ -18,19 +18,13 @@ package com.mcmiddleearth.mcme.editor.command;
 
 import com.mcmiddleearth.mcme.editor.Permissions;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
-import com.mcmiddleearth.mcme.editor.command.sender.EditPlayer;
 import com.mcmiddleearth.mcme.editor.job.JobType;
-import com.mcmiddleearth.pluginutil.NMSUtil;
-import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+
+import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
-import com.mojang.brigadier.context.CommandContext;
-import java.util.logging.Logger;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Server;
 
 /**
  *

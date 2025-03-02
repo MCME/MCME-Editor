@@ -21,10 +21,9 @@ import com.mcmiddleearth.architect.specialBlockHandling.specialBlocks.SpecialBlo
 import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.data.block.BlockShiftData;
 import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
+import com.mcmiddleearth.mcme.editor.data.block.InventoryClearData;
 import com.mcmiddleearth.mcme.editor.util.Profiler;
-import com.mcmiddleearth.pluginutil.NMSUtil;
-import java.util.HashMap;
-import java.util.Map;
+import com.mcmiddleearth.pluginutil.nms.AccessServer;
 import lombok.Getter;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -32,10 +31,13 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -54,7 +56,7 @@ public class ChunkBlockEditData extends ChunkEditData {
     
     public boolean add(Vector vector, EditBlockData data) {
         if(vector.getBlockX()>=0 && vector.getBlockX()<16
-                && vector.getBlockY()>=0 && vector.getBlockY()<256
+                && vector.getBlockY()>=-64 && vector.getBlockY()<320
                 && vector.getBlockZ()>=0 && vector.getBlockZ()<16) {
             changes.put(vector, data);
             return true;
@@ -64,7 +66,7 @@ public class ChunkBlockEditData extends ChunkEditData {
     
     public boolean addRemoval(Vector vector, ItemBlockData data) {
         if(vector.getBlockX()>=0 && vector.getBlockX()<16
-                && vector.getBlockY()>=0 && vector.getBlockY()<256
+                && vector.getBlockY()>=-64 && vector.getBlockY()<320
                 && vector.getBlockZ()>=0 && vector.getBlockZ()<16) {
             removals.put(vector, data);
             return true;
@@ -101,10 +103,12 @@ public class ChunkBlockEditData extends ChunkEditData {
             }
         });
         changes.forEach((vector,data) -> {
-            chunk.getBlock(vector.getBlockX(),
-                           vector.getBlockY(),
-                           vector.getBlockZ())
-                    .setType(Material.AIR,false);
+            if(!(data instanceof InventoryClearData)) {
+                chunk.getBlock(vector.getBlockX(),
+                                vector.getBlockY(),
+                                vector.getBlockZ())
+                        .setType(Material.AIR, false);
+            }
         });
         new BukkitRunnable() {
             @Override
@@ -140,7 +144,7 @@ Logger.getGlobal().info("Force load: "+chunkX + " "+chunkZ);
         
     private void applyEditsUnchecked(Chunk chunk) {
         changes.forEach((vector, data) -> {
-    //Logger.getGlobal().info("change: "+vector+" "+data+" "+world);
+//Logger.getGlobal().info("change: "+vector+" "+data);
             Block block = chunk.getBlock(vector.getBlockX(),
                                vector.getBlockY(),
                                vector.getBlockZ());
@@ -150,15 +154,21 @@ Logger.getGlobal().info("Force load: "+chunkX + " "+chunkZ);
                 itemBlockData.getSpecialItemBlock().placeArmorStand(block, BlockFace.DOWN, 
                                                      new Location(null,0,0,0,itemBlockData.getYaw()+180,0),
                                                      itemBlockData.getCurrentDamage());
-            } else if(data instanceof BlockShiftData){
-                block.setBlockData(((BlockShiftData)data).getAmbient(),false);
-                Block shifted = block.getRelative(((BlockShiftData)data).getDirection(), ((BlockShiftData)data).getShift());
-                shifted.setBlockData(((BlockShiftData)data).getBlockData(),false);
+            } else if(data instanceof BlockShiftData) {
+                block.setBlockData(((BlockShiftData) data).getAmbient(), false);
+                Block shifted = block.getRelative(((BlockShiftData) data).getDirection(), ((BlockShiftData) data).getShift());
+                shifted.setBlockData(((BlockShiftData) data).getBlockData(), false);
+            } else if(data instanceof InventoryClearData) {
+//Logger.getGlobal().info("searching inventory: "+block.getX()+" "+block.getY()+" "+block.getZ()+" "+block.getState().getClass().getSimpleName());
+                if(block.getState() instanceof InventoryHolder) {
+//Logger.getGlobal().info("apply inventory clear: "+block.getX()+" "+block.getY()+" "+block.getZ());
+                    ((InventoryHolder)block.getState()).getInventory().clear();
+                }
             } else {
                 block.setBlockData(data.getBlockData(), false);
                 //No entity tile found error here.
             }
-            NMSUtil.calcLight(block.getLocation());
+            AccessServer.calcLight(block.getLocation());
         });
     }
 }

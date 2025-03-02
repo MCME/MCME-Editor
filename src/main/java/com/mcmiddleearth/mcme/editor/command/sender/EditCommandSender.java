@@ -107,7 +107,7 @@ public abstract class EditCommandSender {
             case COUNT:
                 boolean secondColor = false;
                 for(EditBlockData data: counts) {
-                    result.add((secondColor?ChatColor.LIGHT_PURPLE:ChatColor.DARK_PURPLE)
+                    result.add((secondColor?ChatColor.BLUE:ChatColor.AQUA)
                                +data.getAsString(true));
                     secondColor = !secondColor;
                 } break;
