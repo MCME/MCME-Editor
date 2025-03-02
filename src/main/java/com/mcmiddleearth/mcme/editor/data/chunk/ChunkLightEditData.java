@@ -16,13 +16,12 @@
  */
 package com.mcmiddleearth.mcme.editor.data.chunk;
 
-import com.mcmiddleearth.mcme.editor.data.chunk.ChunkEditData;
-import com.mcmiddleearth.pluginutil.NMSUtil;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.mcmiddleearth.pluginutil.nms.AccessServer;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -38,7 +37,7 @@ public class ChunkLightEditData extends ChunkEditData {
     
     @Override
     public void applyEdit(World world, boolean refreshChunks) {
-        NMSUtil.calcLight(world.getChunkAt(getChunkX(),getChunkZ()), edits);
+        AccessServer.calcLight(world.getChunkAt(getChunkX(),getChunkZ()), edits);
         if(refreshChunks) {
             world.refreshChunk(getChunkX(), getChunkZ());
         }

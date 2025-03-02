@@ -16,21 +16,32 @@
  */
 package com.mcmiddleearth.mcme.editor.job;
 
+import com.mcmiddleearth.mcme.editor.EditorPlugin;
 import com.mcmiddleearth.mcme.editor.command.sender.EditCommandSender;
 import com.mcmiddleearth.mcme.editor.data.block.EditBlockData;
+import com.mcmiddleearth.mcme.editor.data.block.InventoryClearData;
 import com.mcmiddleearth.mcme.editor.data.block.SimpleBlockData;
 import com.mcmiddleearth.mcme.editor.data.chunk.ChunkBlockEditData;
 import com.mcmiddleearth.mcme.editor.data.chunk.ChunkEditData;
 import com.mcmiddleearth.mcme.editor.data.EditChunkSnapshot;
 import com.sk89q.worldedit.regions.Region;
+
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
@@ -48,7 +59,25 @@ public class SurvivalPrepJob extends BlockSearchJob {
         super(owner, id, world, extraRegion, regions, exactMatch, size, false, false);
         saveActionsToFile();
     }
-    
+
+    public void editChunk() {
+        ChunkEditData edit = writingQueue.peek();
+        Arrays.stream(getWorld().getChunkAt(edit.getChunkX(), edit.getChunkZ()).getEntities())
+                .filter(this::isMCMEEntity).forEach(Entity::remove);
+        super.editChunk();
+
+    }
+
+    private boolean isMCMEEntity(@NotNull Entity entity) {
+        switch(entity.getType()) {
+            case PAINTING:
+            case PLAYER:
+                return false;
+            default:
+                return true;
+        }
+    }
+
     @Override
     public ChunkEditData handle(EditChunkSnapshot editChunk) {
         ChunkSnapshot chunk = editChunk.getChunkSnapshot();
@@ -79,10 +108,14 @@ public class SurvivalPrepJob extends BlockSearchJob {
                             edit.add(new Vector(i,k,j),new SimpleBlockData(Bukkit.createBlockData(Material.STONE)));
                         }
                     }
+                    if(hasInventory(chunk.getBlockData(i,k,j))) {
+//Logger.getGlobal().info("adding inventory clear: "+chunk.getX()+" "+chunk.getZ()+" / "+i+" "+k+" "+j);
+                        edit.add(new Vector(i,k,j), new InventoryClearData());
+                    }
                 }
             }
         }
-        for(int i=0; i<16; i++) {
+        /*for(int i=0; i<16; i++) {
             for(int j=0; j<16; j++) {
 //Logger.getGlobal().info("maxY: "+maxY);
                 int top = 0;
@@ -94,6 +127,7 @@ public class SurvivalPrepJob extends BlockSearchJob {
                             top = k;
                         } else if(k < top-4 && k > top - 40 && top < 60 && Math.random()<f*0.0012) {
                             placeVein(chunk,Material.COAL_ORE,i,k,j,12,edit);
+//Logger.getGlobal().info("Place vein: "+chunk.getX()+" "+chunk.getZ()+" "+i+" "+k+" "+j);
                         } else if(k < top-25 && Math.random()<f*0.0007) {
                             placeVein(chunk,Material.IRON_ORE,i,k,j,7,edit);
                         } else if(k < top-35 && Math.random()<f*0.0002) {
@@ -112,7 +146,7 @@ public class SurvivalPrepJob extends BlockSearchJob {
                     }
                 }
             }
-        }
+        }*/
         return edit;
     }
     
@@ -169,7 +203,7 @@ public class SurvivalPrepJob extends BlockSearchJob {
     private boolean isMaterial(ChunkSnapshot chunk, ChunkBlockEditData edit, int x, int y, int z, Material mat) {
         if(x<0 || x > 15 || y < 0 || y > 255 || z < 0 || z > 15) return false;
         EditBlockData editData = edit.get(new Vector(x,y,z));
-        if(editData!=null) {
+        if(editData!=null && editData.getBlockData()!=null) {
             return editData.getBlockData().getMaterial().equals(mat);
         } else {
             return chunk.getBlockType(x, y, z).equals(mat);
@@ -209,6 +243,50 @@ public class SurvivalPrepJob extends BlockSearchJob {
             }
         }
         return false;    
+    }
+
+    private boolean hasInventory(BlockData data) {
+//Logger.getGlobal().info("Data: "+data.getMaterial().name());
+        switch(data.getMaterial()) {
+            case HOPPER:
+            case CHEST:
+            case TRAPPED_CHEST:
+            case ENCHANTING_TABLE:
+            case ENDER_CHEST:
+            case SHULKER_BOX:
+            case DISPENSER:
+            case DROPPER:
+            case FURNACE:
+            case GRINDSTONE:
+            case CRAFTING_TABLE:
+            case ANVIL:
+            case DAMAGED_ANVIL:
+            case BREWING_STAND:
+            case SMOKER:
+            case BLACK_SHULKER_BOX:
+            case BLUE_SHULKER_BOX:
+            case BROWN_SHULKER_BOX:
+            case CYAN_SHULKER_BOX:
+            case GREEN_SHULKER_BOX:
+            case LIGHT_BLUE_SHULKER_BOX:
+            case LIME_SHULKER_BOX:
+            case MAGENTA_SHULKER_BOX:
+            case ORANGE_SHULKER_BOX:
+            case LIGHT_GRAY_SHULKER_BOX:
+            case PINK_SHULKER_BOX:
+            case GRAY_SHULKER_BOX:
+            case RED_SHULKER_BOX:
+            case YELLOW_SHULKER_BOX:
+            case WHITE_SHULKER_BOX:
+            case PURPLE_SHULKER_BOX:
+            case BLAST_FURNACE:
+            case BARREL:
+            case JUKEBOX:
+            case LECTERN:
+                return true;
+            default:
+                return false;
+        }
     }
     
     @Override
